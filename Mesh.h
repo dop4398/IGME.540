@@ -1,6 +1,6 @@
 #pragma once
 #include "Vertex.h"
-#include "DXCore.h"
+#include <d3d11.h>
 #include <wrl/client.h>
 
 class Mesh
@@ -11,19 +11,17 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 	// int to hold the number of indices in the index buffer
 	int numberOfIndices;
-	
+
+public:
 	Mesh(
-		Vertex* objects, 
-		int numberOfVertices, 
-		int* indices, 
-		int numberOfIndices, 
+		Vertex* vertices,
+		int numberOfVertices,
+		int* indices,
+		int numberOfIndices,
 		Microsoft::WRL::ComPtr<ID3D11Device> device);
 	~Mesh();
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetIndexBuffer();
 	int GetIndexCount();
-
-public:
-
 };
 
