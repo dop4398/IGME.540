@@ -154,23 +154,44 @@ void Game::CreateBasicGeometry()
 	// mesh0 - triangle
 	Vertex vertices0[] =
 	{
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
+		{ XMFLOAT3(+0.0f, +0.4f, +0.0f), red },
+		{ XMFLOAT3(+0.2f, -0.1f, +0.0f), blue },
+		{ XMFLOAT3(-0.2f, -0.1f, +0.0f), green },
+		{ XMFLOAT3(-0.2f, -0.1f, +0.0f), green },
+		{ XMFLOAT3(+0.2f, -0.1f, +0.0f), blue },
+		{ XMFLOAT3(+0.0f, -0.6f, +0.0f), red }
 	};
-	int indices0[] = { 0, 1, 2 };
-	mesh0 = new Mesh(vertices0, 3, indices0, 3, device);
+	int indices0[] = { 0, 1, 2, 3, 4, 5 };
+	mesh0 = new Mesh(vertices0, 6, indices0, 6, device);
 
 	// mesh1 - rectangle
 	Vertex vertices1[] =
 	{
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), blue },
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), blue }
+		{ XMFLOAT3(-0.9f, +0.9f, +0.0f), red },
+		{ XMFLOAT3(-0.4f, +0.9f, +0.0f), red },
+		{ XMFLOAT3(-0.4f, +0.0f, +0.0f), blue },
+		{ XMFLOAT3(-0.4f, +0.0f, +0.0f), blue },
+		{ XMFLOAT3(-0.9f, +0.0f, +0.0f), blue },
+		{ XMFLOAT3(-0.9f, +0.9f, +0.0f), red }
 	};
+	int indices1[] = { 0, 1, 2, 3, 4, 5 };
+	mesh1 = new Mesh(vertices1, 6, indices1, 6, device);
 
 	// mesh2
+	Vertex vertices2[] =
+	{
+		{ XMFLOAT3(+0.4f, +0.0f, +0.0f), blue },
+		{ XMFLOAT3(+0.5f, +0.3f, +0.0f), green },
+		{ XMFLOAT3(+0.6f, +0.0f, +0.0f), green },
+		{ XMFLOAT3(+0.6f, +0.0f, +0.0f), green },
+		{ XMFLOAT3(+0.7f, +0.3f, +0.0f), green },
+		{ XMFLOAT3(+0.8f, +0.0f, +0.0f), blue },
+		{ XMFLOAT3(+0.5f, +0.3f, +0.0f), green },
+		{ XMFLOAT3(+0.6f, +0.6f, +0.0f), red },
+		{ XMFLOAT3(+0.7f, +0.3f, +0.0f), green }
+	};
+	int indices2[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+	mesh2 = new Mesh(vertices2, 9, indices2, 9, device);
 }
 
 
