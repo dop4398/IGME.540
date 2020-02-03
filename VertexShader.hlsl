@@ -2,7 +2,8 @@
 cbuffer ExternalData : register(b0)
 {
 	float4 colorTint;
-	matrix worldMatrix;
+	float3 offset;
+	//matrix worldMatrix;
 }
 
 
@@ -59,7 +60,8 @@ VertexToPixel main( VertexShaderInput input )
 	//   which we're leaving at 1.0 for now (this is more useful when dealing with 
 	//   a perspective projection matrix, which we'll get to in future assignments).
 	/*** worldMatrix applied here ***/
-	output.position = mul(float4(input.position, 1.0f), worldMatrix);
+	output.position = float4(input.position + offset, 1.0f);
+	//output.position = mul(float4(input.position, 1.0f), worldMatrix);
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer

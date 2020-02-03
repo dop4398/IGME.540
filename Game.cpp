@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Vertex.h"
+#include "BufferStructs.h"
 
 // Needed for a helper function to read compiled shader files from the hard drive
 #pragma comment(lib, "d3dcompiler.lib")
@@ -7,15 +8,6 @@
 
 // For the DirectX Math library
 using namespace DirectX;
-
-
-struct VSData
-{
-	XMFLOAT4 ColorTint;
-	XMFLOAT4X4 WorldMatrix;
-};
-
-
 
 // --------------------------------------------------------
 // Constructor
@@ -75,15 +67,17 @@ void Game::Init()
 	// Essentially: "What kind of shape should the GPU draw with our data?"
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	unsigned int size = sizeof(VSData);
+	// Get the size as the next multiple of 16
+	unsigned int size = sizeof(VertexShaderExternalData);
 	size = (size + 15) / 16 * 16;
 
-	// Creaate a constant buffer in D3D to hold shader data
-	D3D11_BUFFER_DESC cbDesc = {};
+	// Describe the constant buffer
+	CD3D11_BUFFER_DESC cbDesc = {}; // Sets to all zeros
 	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cbDesc.ByteWidth = size;
 	cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+
 	device->CreateBuffer(&cbDesc, 0, vsConstantBuffer.GetAddressOf());
 }
 
@@ -233,15 +227,6 @@ void Game::Update(float deltaTime, float totalTime)
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
-
-	// Create the matrix (or matrices) for our transformation
-	// use XMMATRIX for math and XMFLOAT4X4 for storage
-	XMMATRIX t = XMMatrixTranslation(sin(totalTime), 0, 0);
-	XMMATRIX s = XMMatrixScaling(0.75f, 0.75f, 0.75f);
-	XMMATRIX r = XMMatrixRotationZ(totalTime / 2.0f);
-
-	// transpose the matrix to switch it from row-major (CPU) to column-major (GPU)
-	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(s * r * t));
 }
 
 // --------------------------------------------------------
@@ -279,19 +264,22 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->IASetInputLayout(inputLayout.Get());
 
 
-	// Collect shader data locally
-	VSData vsData = {};
-	vsData.ColorTint = XMFLOAT4(1, 0, 0, 1);
-	vsData.WorldMatrix = worldMatrix;
+	// Collecting data locally
+	VertexShaderExternalData vsData;
+	vsData.colorTint = XMFLOAT4(0.25f, 1.0f, 0.25f, 1.0f);
+	vsData.offset = XMFLOAT3(0.25f, 0.0f, 0.0f);
 
-	D3D11_MAPPED_SUBRESOURCE mapped = {};
-	context->Map(vsConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
+	context->Map(vsConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
 
-	memcpy(mapped.pData, &vsData, sizeof(VSData));
+	memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
+
 	context->Unmap(vsConstantBuffer.Get(), 0);
 
-	// Bind the constant buffer to the pipeline
-	context->VSSetConstantBuffers(0, 1, vsConstantBuffer.GetAddressOf());
+	context->VSSetConstantBuffers(
+		0,		// which slot (register) to bind the buffer to?
+		1,		// how many are we activating?
+		vsConstantBuffer.GetAddressOf());	// Array of buffers (or the address of one)
 
 
 	// Set buffers in the input assembler
@@ -302,6 +290,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//    in a larger application/game
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
+
 
 	// mesh0
 	context->IASetVertexBuffers(0, 1, mesh0->GetVertexBuffer().GetAddressOf(), &stride, &offset);
@@ -316,6 +305,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		0,     // Offset to the first index we want to use
 		0);    // Offset to add to each index when looking up vertices
 
+
 	// mesh1
 	context->IASetVertexBuffers(0, 1, mesh1->GetVertexBuffer().GetAddressOf(), &stride, &offset);
 	context->IASetIndexBuffer(mesh1->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -324,6 +314,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		0,     // Offset to the first index we want to use
 		0);    // Offset to add to each index when looking up vertices
 	
+
 	// mesh2
 	context->IASetVertexBuffers(0, 1, mesh2->GetVertexBuffer().GetAddressOf(), &stride, &offset);
 	context->IASetIndexBuffer(mesh2->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
@@ -331,6 +322,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		mesh2->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
 		0,     // Offset to the first index we want to use
 		0);    // Offset to add to each index when looking up vertices
+
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it
