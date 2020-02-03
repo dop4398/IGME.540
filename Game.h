@@ -26,11 +26,16 @@ private:
 	void LoadShaders(); 
 	void CreateBasicGeometry();
 
+	// Matrices
+	DirectX::XMFLOAT4X4 worldMatrix;
 	
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
 	//    Component Object Mode, which DirectX objects do
 	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
+
+	// Constant buffer stuff
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstantBuffer;
 
 	// Shaders and shader-related constructs
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
