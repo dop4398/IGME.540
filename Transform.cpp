@@ -7,7 +7,8 @@ using namespace DirectX;
 // Initializes the transformation values
 Transform::Transform()
 {
-	position = {};
+	position = { 0, 0, 0 };
+	rotation = { 0, 0, 0 };
 	scale = { 1, 1, 1 };
 	XMStoreFloat4x4(&world, XMMatrixIdentity());
 }

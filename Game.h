@@ -4,6 +4,8 @@
 #include <DirectXMath.h>
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
 #include "Mesh.h"
+#include "Entity.h"
+#include <vector>
 
 class Game 
 	: public DXCore
@@ -28,6 +30,9 @@ private:
 
 	// Matrices
 	DirectX::XMFLOAT4X4 worldMatrix;
+
+	// Entities
+	std::vector<Entity*> entities = std::vector<Entity*>();
 	
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the

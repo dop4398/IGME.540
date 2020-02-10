@@ -1,13 +1,12 @@
 #pragma once
 #include "DXCore.h"
 #include <DirectXMath.h>
-#include <wrl/client.h>
 
 class Transform
 {
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 rotation;
-	DirectX::XMFLOAT3 scale;	
+	DirectX::XMFLOAT3 scale;
 	DirectX::XMFLOAT4X4 world;
 
 public:
