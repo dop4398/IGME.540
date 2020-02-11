@@ -165,6 +165,7 @@ void Game::CreateBasicGeometry()
 	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
 	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 
+
 	// mesh0 - triangle
 	Vertex vertices0[] =
 	{
@@ -176,7 +177,21 @@ void Game::CreateBasicGeometry()
 		{ XMFLOAT3(+0.0f, -0.6f, +0.0f), red }
 	};
 	int indices0[] = { 0, 1, 2, 3, 4, 5 };
-	mesh0 = new Mesh(vertices0, 6, indices0, 6, device);
+	// Add it to entities
+	entities.push_back(new Entity(new Mesh(
+		vertices0, 
+		6, 
+		indices0, 
+		6, 
+		device)));
+	// do it again to ensure sharing meshes works
+	entities.push_back(new Entity(new Mesh(
+		vertices0,
+		6,
+		indices0,
+		6,
+		device)));
+
 
 	// mesh1 - rectangle
 	Vertex vertices1[] =
@@ -189,9 +204,15 @@ void Game::CreateBasicGeometry()
 		{ XMFLOAT3(-0.9f, +0.9f, +0.0f), red }
 	};
 	int indices1[] = { 0, 1, 2, 3, 4, 5 };
-	mesh1 = new Mesh(vertices1, 6, indices1, 6, device);
+	entities.push_back(new Entity(new Mesh(
+		vertices1,
+		6,
+		indices1,
+		6,
+		device)));
 
-	// mesh2
+
+	// mesh2 - triforce
 	Vertex vertices2[] =
 	{
 		{ XMFLOAT3(+0.4f, +0.0f, +0.0f), blue },
@@ -205,7 +226,12 @@ void Game::CreateBasicGeometry()
 		{ XMFLOAT3(+0.7f, +0.3f, +0.0f), green }
 	};
 	int indices2[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-	mesh2 = new Mesh(vertices2, 9, indices2, 9, device);
+	entities.push_back(new Entity(new Mesh(
+		vertices2,
+		9,
+		indices2,
+		9,
+		device)));
 }
 
 
@@ -224,6 +250,12 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
+	for (int i = 0; i < entities.size(); i++)
+	{
+		entities[i]->GetTransform()->Rotate(0, 0, 1 * deltaTime);
+		entities[i]->GetTransform()->CreateWorldMatrix();
+	}
+
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
@@ -264,64 +296,49 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->IASetInputLayout(inputLayout.Get());
 
 
-	// Collecting data locally
-	VertexShaderExternalData vsData;
-	vsData.colorTint = XMFLOAT4(0.25f, 1.0f, 0.25f, 1.0f);
-	vsData.offset = XMFLOAT3(0.25f, 0.0f, 0.0f);
+	// Loop through all of the entities being drawn
+	for (int i = 0; i < entities.size(); i++)
+	{
 
-	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
-	context->Map(vsConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
+		// Collecting data locally
+		VertexShaderExternalData vsData;
+		vsData.colorTint = XMFLOAT4(0.25f, 1.0f, 0.25f, 1.0f);
+		vsData.world = entities[i]->GetTransform()->GetWorldMatrix();
 
-	memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
+		D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
+		context->Map(vsConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);
 
-	context->Unmap(vsConstantBuffer.Get(), 0);
+		memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));
 
-	context->VSSetConstantBuffers(
-		0,		// which slot (register) to bind the buffer to?
-		1,		// how many are we activating?
-		vsConstantBuffer.GetAddressOf());	// Array of buffers (or the address of one)
+		context->Unmap(vsConstantBuffer.Get(), 0);
 
-
-	// Set buffers in the input assembler
-	//  - Do this ONCE PER OBJECT you're drawing, since each object might
-	//    have different geometry.
-	//  - for this demo, this step *could* simply be done once during Init(),
-	//    but I'm doing it here because it's often done multiple times per frame
-	//    in a larger application/game
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
+		context->VSSetConstantBuffers(
+			0,		// which slot (register) to bind the buffer to?
+			1,		// how many are we activating?
+			vsConstantBuffer.GetAddressOf());	// Array of buffers (or the address of one)
 
 
-	// mesh0
-	context->IASetVertexBuffers(0, 1, mesh0->GetVertexBuffer().GetAddressOf(), &stride, &offset);
-	context->IASetIndexBuffer(mesh0->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-	// Finally do the actual drawing
-	//  - Do this ONCE PER OBJECT you intend to draw
-	//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
-	//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-	//     vertices in the currently set VERTEX BUFFER
-	context->DrawIndexed(
-		mesh0->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-		0,     // Offset to the first index we want to use
-		0);    // Offset to add to each index when looking up vertices
+		// Set buffers in the input assembler
+		//  - Do this ONCE PER OBJECT you're drawing, since each object might
+		//    have different geometry.
+		//  - for this demo, this step *could* simply be done once during Init(),
+		//    but I'm doing it here because it's often done multiple times per frame
+		//    in a larger application/game
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
 
-
-	// mesh1
-	context->IASetVertexBuffers(0, 1, mesh1->GetVertexBuffer().GetAddressOf(), &stride, &offset);
-	context->IASetIndexBuffer(mesh1->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-	context->DrawIndexed(
-		mesh1->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-		0,     // Offset to the first index we want to use
-		0);    // Offset to add to each index when looking up vertices
 	
-
-	// mesh2
-	context->IASetVertexBuffers(0, 1, mesh2->GetVertexBuffer().GetAddressOf(), &stride, &offset);
-	context->IASetIndexBuffer(mesh2->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-	context->DrawIndexed(
-		mesh2->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-		0,     // Offset to the first index we want to use
-		0);    // Offset to add to each index when looking up vertices
+		context->IASetVertexBuffers(0, 1, entities[i]->GetMesh()->GetVertexBuffer().GetAddressOf(), &stride, &offset);
+		context->IASetIndexBuffer(entities[i]->GetMesh()->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+		//  - Do this ONCE PER OBJECT you intend to draw
+		//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
+		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
+		//     vertices in the currently set VERTEX BUFFER
+		context->DrawIndexed(
+			entities[i]->GetMesh()->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+			0,     // Offset to the first index we want to use
+			0);    // Offset to add to each index when looking up vertices
+	}
 
 
 	// Present the back buffer to the user
