@@ -45,9 +45,10 @@ Game::~Game()
 	// we don't need to explicitly clean up those DirectX objects
 	// - If we weren't using smart pointers, we'd need
 	//   to call Release() on each DirectX object
-	delete mesh0;
-	delete mesh1;
-	delete mesh2;
+	for (int i = 0; i < entities.size(); i++)
+	{
+		delete entities[i];
+	}
 }
 
 // --------------------------------------------------------
