@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "Entity.h"
 #include "Camera.h"
+#include "Material.h"
 #include <vector>
 
 class Game 
@@ -49,5 +50,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+
+	// Materials for Assignment 5
+	std::vector<Material*> materials;
 };
 

@@ -1,7 +1,6 @@
 #pragma once
 #include <DirectXMath.h>
 #include <Windows.h>
-
 #include "Transform.h"
 
 class Camera

@@ -1,8 +1,9 @@
 #include "Entity.h"
 
-Entity::Entity(Mesh* mesh)
+Entity::Entity(Mesh* mesh, Material* material)
 {
 	this->mesh = mesh;
+	this->material = material;
 }
 
 Entity::~Entity()
@@ -22,4 +23,9 @@ Mesh* Entity::GetMesh()
 Transform* Entity::GetTransform()
 {
 	return &transform;
+}
+
+Material* Entity::GetMaterial()
+{
+	return material;
 }

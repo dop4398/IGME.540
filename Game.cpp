@@ -31,7 +31,6 @@ Game::Game(HINSTANCE hInstance)
 	CreateConsoleWindow(500, 120, 32, 120);
 	printf("Console window created successfully.  Feel free to printf() here.\n");
 #endif
-
 }
 
 // --------------------------------------------------------
@@ -188,14 +187,18 @@ void Game::CreateBasicGeometry()
 		6, 
 		indices0, 
 		6, 
-		device)));
+		device),
+		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f))
+	));
 	// do it again to ensure sharing meshes works
 	entities.push_back(new Entity(new Mesh(
 		vertices0,
 		6,
 		indices0,
 		6,
-		device)));
+		device),
+		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)) // material from our materials list
+	));
 
 
 	// mesh1 - rectangle
@@ -214,7 +217,9 @@ void Game::CreateBasicGeometry()
 		6,
 		indices1,
 		6,
-		device)));
+		device),
+		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f))
+	));
 
 
 	// mesh2 - triforce
@@ -231,12 +236,15 @@ void Game::CreateBasicGeometry()
 		{ XMFLOAT3(+0.7f, +0.3f, +0.0f), green }
 	};
 	int indices2[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-	entities.push_back(new Entity(new Mesh(
-		vertices2,
-		9,
-		indices2,
-		9,
-		device)));
+	entities.push_back(new Entity(
+		new Mesh(
+			vertices2,
+			9,
+			indices2,
+			9,
+			device),
+		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f))
+	));
 }
 
 
@@ -261,7 +269,7 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	for (int i = 0; i < entities.size(); i++)
 	{
-		//entities[i]->GetTransform()->Rotate(0, 0, 1 * deltaTime);
+		entities[i]->GetTransform()->Rotate(0, 0, 1 * deltaTime);
 		entities[i]->GetTransform()->CreateWorldMatrix();
 	}
 
@@ -299,7 +307,6 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->VSSetShader(vertexShader.Get(), 0, 0);
 	context->PSSetShader(pixelShader.Get(), 0, 0);
 
-
 	// Ensure the pipeline knows how to interpret the data (numbers)
 	// from the vertex buffer.  
 	// - If all of your 3D models use the exact same vertex layout,
@@ -311,10 +318,12 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Loop through all of the entities being drawn
 	for (int i = 0; i < entities.size(); i++)
 	{
-
+		// Activate the current material's shaders
+		context->VSSetShader(entities[i]->GetMaterial()->GetVertexShader().Get(), 0, 0);
+		context->PSSetShader(entities[i]->GetMaterial()->GetPixelShader().Get(), 0, 0);
 		// Collecting data locally
 		VertexShaderExternalData vsData;
-		vsData.colorTint = XMFLOAT4(0.25f, 1.0f, 0.25f, 1.0f);
+		vsData.colorTint = entities[i]->GetMaterial()->GetColorTint();
 		vsData.world = entities[i]->GetTransform()->GetWorldMatrix();
 		vsData.view = camera->GetView();
 		vsData.projection = camera->GetProjection();
