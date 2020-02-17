@@ -16,6 +16,7 @@ public:
 	void CreateWorldMatrix();
 
 	void MoveAbsolute(float x, float y, float z);
+	void MoveRelative(float x, float y, float z);
 	void Rotate(float pitch, float yaw, float roll);
 	void Scale(float x, float y, float z);
 

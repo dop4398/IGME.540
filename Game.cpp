@@ -80,6 +80,10 @@ void Game::Init()
 	cbDesc.Usage = D3D11_USAGE_DYNAMIC;
 
 	device->CreateBuffer(&cbDesc, 0, vsConstantBuffer.GetAddressOf());
+
+	// Create the camera
+	//camera = new Camera(x, y, z, aspectRatio, mouseLookSpeed);
+	camera = new Camera(0.0f, 0.0f, -5.0f, (float)(this->width / this->height), 2.0f);
 }
 
 // --------------------------------------------------------
@@ -244,6 +248,10 @@ void Game::OnResize()
 {
 	// Handle base-level DX resize stuff
 	DXCore::OnResize();
+
+	// update the camera
+	if(camera != 0)
+		camera->UpdateProjectionMatrix((float)(this->width / this->height));
 }
 
 // --------------------------------------------------------
@@ -253,13 +261,16 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	for (int i = 0; i < entities.size(); i++)
 	{
-		entities[i]->GetTransform()->Rotate(0, 0, 1 * deltaTime);
+		//entities[i]->GetTransform()->Rotate(0, 0, 1 * deltaTime);
 		entities[i]->GetTransform()->CreateWorldMatrix();
 	}
 
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
+
+	// Update the camera
+	camera->Update(deltaTime, this->hWnd);
 }
 
 // --------------------------------------------------------
@@ -305,6 +316,8 @@ void Game::Draw(float deltaTime, float totalTime)
 		VertexShaderExternalData vsData;
 		vsData.colorTint = XMFLOAT4(0.25f, 1.0f, 0.25f, 1.0f);
 		vsData.world = entities[i]->GetTransform()->GetWorldMatrix();
+		vsData.view = camera->GetView();
+		vsData.projection = camera->GetProjection();
 
 		D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
 		context->Map(vsConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);

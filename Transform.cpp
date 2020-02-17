@@ -46,6 +46,20 @@ void Transform::MoveAbsolute(float x, float y, float z)
 	position.z += z;
 }
 
+void Transform::MoveRelative(float x, float y, float z)
+{
+	// Create a direction vector from the parameters
+	//  and a rotation quaternion
+	XMVECTOR movement = XMVectorSet(x, y, z, 0);
+	XMVECTOR rotQuat = XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&rotation));
+
+	// Rotate the movement by the quaternion
+	XMVECTOR dir = XMVector3Rotate(movement, rotQuat);
+
+	// Add and store
+	XMStoreFloat3(&position, XMLoadFloat3(&position) + dir);
+}
+
 
 void Transform::Rotate(float pitch, float yaw, float roll)
 {

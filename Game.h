@@ -5,6 +5,7 @@
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
 #include "Mesh.h"
 #include "Entity.h"
+#include "Camera.h"
 #include <vector>
 
 class Game 
@@ -33,6 +34,8 @@ private:
 
 	// Entities
 	std::vector<Entity*> entities = std::vector<Entity*>();
+
+	Camera* camera;
 	
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
@@ -46,14 +49,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
-
-
-	// Mesh objects
-	/*Microsoft::WRL::ComPtr<Mesh> mesh0;
-	Microsoft::WRL::ComPtr<Mesh> mesh1;
-	Microsoft::WRL::ComPtr<Mesh> mesh2;*/
-	Mesh* mesh0;
-	Mesh* mesh1;
-	Mesh* mesh2;
 };
 
