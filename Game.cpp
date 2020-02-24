@@ -46,12 +46,12 @@ Game::~Game()
 	//   to call Release() on each DirectX object
 	for (int i = 0; i < entities.size(); i++)
 	{
-		delete entities[i]->GetMaterial();
 		delete entities[i];
 	}
 
 	delete vertexShader;
 	delete pixelShader;
+	delete camera;
 }
 
 // --------------------------------------------------------

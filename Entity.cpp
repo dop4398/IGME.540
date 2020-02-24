@@ -8,6 +8,8 @@ Entity::Entity(Mesh* mesh, Material* material)
 
 Entity::~Entity()
 {
+	delete mesh;
+	delete material;
 }
 
 void Entity::Draw()
