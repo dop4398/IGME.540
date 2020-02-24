@@ -2,6 +2,8 @@
 #include "Vertex.h"
 #include <d3d11.h>
 #include <wrl/client.h>
+#include <fstream>
+#include <vector>
 
 class Mesh
 {
@@ -18,6 +20,9 @@ public:
 		int numberOfVertices,
 		int* indices,
 		int numberOfIndices,
+		Microsoft::WRL::ComPtr<ID3D11Device> device);
+	Mesh(
+		const char* filename,
 		Microsoft::WRL::ComPtr<ID3D11Device> device);
 	~Mesh();
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();

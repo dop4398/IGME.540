@@ -1,6 +1,6 @@
 #include "Material.h"
 
-Material::Material(Microsoft::WRL::ComPtr<ID3D11PixelShader> ps, Microsoft::WRL::ComPtr<ID3D11VertexShader> vs, DirectX::XMFLOAT4 colorTint)
+Material::Material(SimplePixelShader* ps, SimpleVertexShader* vs, DirectX::XMFLOAT4 colorTint)
 {
 	pixelShader = ps;
 	vertexShader = vs;
@@ -17,12 +17,12 @@ DirectX::XMFLOAT4 Material::GetColorTint()
 	return colorTint;
 }
 
-Microsoft::WRL::ComPtr<ID3D11PixelShader> Material::GetPixelShader()
+SimplePixelShader* Material::GetPixelShader()
 {
 	return pixelShader;
 }
 
-Microsoft::WRL::ComPtr<ID3D11VertexShader> Material::GetVertexShader()
+SimpleVertexShader* Material::GetVertexShader()
 {
 	return vertexShader;
 }

@@ -3,24 +3,25 @@
 #include <DirectXMath.h>
 #include <wrl/client.h>
 #include <Windows.h>
+#include "SimpleShader.h"
 
 class Material
 {
 	DirectX::XMFLOAT4 colorTint;
 
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+	SimplePixelShader* pixelShader;
+	SimpleVertexShader* vertexShader;
 
 public:
 	Material(
-		Microsoft::WRL::ComPtr<ID3D11PixelShader> ps,
-		Microsoft::WRL::ComPtr<ID3D11VertexShader> vs,
+		SimplePixelShader* ps,
+		SimpleVertexShader* vs,
 		DirectX::XMFLOAT4 colorTint);
 
 	void SetColorTint(DirectX::XMFLOAT4 tint);
 
 	DirectX::XMFLOAT4 GetColorTint();
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> GetPixelShader();
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> GetVertexShader();
+	SimplePixelShader* GetPixelShader();
+	SimpleVertexShader* GetVertexShader();
 };
 

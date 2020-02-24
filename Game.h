@@ -43,13 +43,9 @@ private:
 	//    Component Object Mode, which DirectX objects do
 	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
 
-	// Constant buffer stuff
-	Microsoft::WRL::ComPtr<ID3D11Buffer> vsConstantBuffer;
-
 	// Shaders and shader-related constructs
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+	SimplePixelShader* pixelShader;
+	SimpleVertexShader* vertexShader;
 
 	// Materials for Assignment 5
 	std::vector<Material*> materials;
