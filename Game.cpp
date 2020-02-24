@@ -85,6 +85,23 @@ void Game::Init()
 	// Create the camera
 	//camera = new Camera(x, y, z, aspectRatio, mouseLookSpeed);
 	camera = new Camera(0.0f, 0.0f, -5.0f, (float)(this->width / this->height), 2.0f);
+
+	// Initialize lights
+	DirectionalLight light1;
+	light1.ambientColor = XMFLOAT3(0.1f, 0.1f, 0.1f);
+	light1.diffuseColor = XMFLOAT3(1, 1, 0);
+	light1.direction = XMFLOAT3(1, -1, 0);
+	lights.push_back(light1);
+	DirectionalLight light2;
+	light2.ambientColor = XMFLOAT3(0.1f, 0.1f, 0.1f);
+	light2.diffuseColor = XMFLOAT3(0, 1, 1);
+	light2.direction = XMFLOAT3(-1, -1, 0);
+	lights.push_back(light2);
+	DirectionalLight light3;
+	light3.ambientColor = XMFLOAT3(0.1f, 0.1f, 0.1f);
+	light3.diffuseColor = XMFLOAT3(1, 0, 1);
+	light3.direction = XMFLOAT3(1, 1, 0);
+	lights.push_back(light3);
 }
 
 // --------------------------------------------------------
@@ -200,8 +217,8 @@ void Game::CreateBasicGeometry()
 
 	// mesh3 - cone
 	entities.push_back(new Entity(
-		new Mesh(GetFullPathTo("../../Assets/Models/cone.obj").c_str(), device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f))
+		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
+		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f))
 	));
 }
 
@@ -270,6 +287,22 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - However, this isn't always the case (but might be for this course)
 	//context->IASetInputLayout(inputLayout.Get()); // Removed due to SimpleShader implementation
 
+
+	pixelShader->SetData(
+		"dLight1",
+		&lights[0],
+		sizeof(DirectionalLight));
+	pixelShader->SetData(
+		"dLight2",
+		&lights[1],
+		sizeof(DirectionalLight));
+	pixelShader->SetData(
+		"dLight3",
+		&lights[2],
+		sizeof(DirectionalLight));
+
+	pixelShader->CopyAllBufferData();
+	
 
 	// Loop through all of the entities being drawn
 	for (int i = 0; i < entities.size(); i++)

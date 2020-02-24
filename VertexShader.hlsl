@@ -41,6 +41,7 @@ struct VertexToPixel
 	//  v    v                v
 	float4 position		: SV_POSITION;	// XYZW position (System Value Position)
 	float4 color		: COLOR;        // RGBA color
+	float3 normal		: NORMAL;
 };
 
 // --------------------------------------------------------
@@ -66,6 +67,13 @@ VertexToPixel main( VertexShaderInput input )
 	/*** worldMatrix applied here ***/
 	matrix wvp = mul(projection, mul(view, world));
 	output.position = mul(wvp, float4(input.position, 1.0f));
+
+	// Pass the normal through
+	// - This line is only valid if we're applying a uniform scale to the object.
+	// - To properly transform a normal using a non-uniform scale, you'll need to 
+	//   use the inverse transpose of the world matrix.
+	output.normal = mul((float3x3)world, input.normal);
+
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer

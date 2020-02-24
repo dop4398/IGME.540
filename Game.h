@@ -7,6 +7,7 @@
 #include "Entity.h"
 #include "Camera.h"
 #include "Material.h"
+#include "Lights.h"
 #include <vector>
 
 class Game 
@@ -49,5 +50,8 @@ private:
 
 	// Materials for Assignment 5
 	std::vector<Material*> materials;
+
+	// Lights
+	std::vector<DirectionalLight> lights = std::vector<DirectionalLight>();
 };
 
