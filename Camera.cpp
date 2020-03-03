@@ -44,16 +44,16 @@ void Camera::Update(float dt, HWND windowHandle)
 
 	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
 	{
-		float yaw = transform.GetPosition().x - prevMousePosition.x;
-		float pitch = transform.GetPosition().y - prevMousePosition.y;
+		float yaw = mousePos.x - prevMousePosition.x;
+		float pitch = mousePos.y - prevMousePosition.y;
 		yaw *= mouseLookSpeed * dt;
 		pitch *= mouseLookSpeed * dt;
 		transform.Rotate(pitch, yaw, 0);
 	}
 
 	// Save the current mouse position as prevMousePosition for the next frame
-	prevMousePosition.x = transform.GetPosition().x;
-	prevMousePosition.y = transform.GetPosition().y;
+	prevMousePosition.x = mousePos.x;
+	prevMousePosition.y = mousePos.y;
 
 	// Every frame, update the view matrix
 	UpdateViewMatrix();

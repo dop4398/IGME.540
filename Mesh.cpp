@@ -258,8 +258,6 @@ Mesh::Mesh(const char* filename, Microsoft::WRL::ComPtr<ID3D11Device> device)
 
 Mesh::~Mesh()
 {
-	vertexBuffer.~ComPtr();
-	indexBuffer.~ComPtr();
 }
 
 Microsoft::WRL::ComPtr<ID3D11Buffer> Mesh::GetVertexBuffer()

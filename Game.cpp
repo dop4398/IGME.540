@@ -244,7 +244,7 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	for (int i = 0; i < entities.size(); i++)
 	{
-		entities[i]->GetTransform()->Rotate(0, 0, 1 * deltaTime);
+		entities[i]->GetTransform()->Rotate(0, 1 * deltaTime, 0);
 		entities[i]->GetTransform()->CreateWorldMatrix();
 	}
 
