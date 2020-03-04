@@ -35,6 +35,11 @@ cbuffer ExternalData : register(b0)
 }
 
 
+// Texture-related resources
+Texture2D diffuseTexture	: register(t0);
+SamplerState samplerOptions : register(s0);
+
+
 // Struct representing the data we expect to receive from earlier pipeline stages
 // - Should match the output of our corresponding vertex shader
 // - The name of the struct itself is unimportant
@@ -79,7 +84,7 @@ float SpecularPhong(float3 normal, float3 lightDir, float3 toCamera, float specE
 }
 
 
-float4 GetFinalColorDir(DirectionalLight directionalLight, float3 surfaceNormal, float4 surfaceColor)
+float4 GetFinalColorDir(DirectionalLight directionalLight, float3 surfaceNormal, float3 surfaceColor)
 {
 	// Calculate the final pixel color
 	float3 finalColor = 
@@ -90,7 +95,7 @@ float4 GetFinalColorDir(DirectionalLight directionalLight, float3 surfaceNormal,
 }
 
 
-float4 GetFinalColorPoint(PointLight pointLight, float3 worldPos, float3 surfaceNormal, float4 surfaceColor)
+float4 GetFinalColorPoint(PointLight pointLight, float3 worldPos, float3 surfaceNormal, float3 surfaceColor)
 {
 	// Calculate the final pixel color
 	float3 finalColor =
@@ -114,17 +119,20 @@ float4 main(VertexToPixel input) : SV_TARGET
 {
 	input.normal = normalize(input.normal);
 
+	float3 surfaceColor = diffuseTexture.Sample(samplerOptions, input.uv).rgb;
+	surfaceColor *= input.color.rgb;
+
 	// Calculate the vector from the pixel's world position to the camera
 	float3 toCamera = normalize(cameraPosition - input.worldPos);
 
 	float4 directionalLightColor =
-		GetFinalColorDir(dLight1, input.normal, input.color) + 
+		GetFinalColorDir(dLight1, input.normal, surfaceColor) +
 		SpecularPhong(input.normal, dLight1.Direction, toCamera, specInt * 64.0f); //+
 		//GetFinalColorDir(dLight2, input.normal, input.color) +
 		//GetFinalColorDir(dLight3, input.normal, input.color);
 
 	float4 pointLightColor =
-		GetFinalColorPoint(pLight1, input.worldPos, input.normal, input.color) +
+		GetFinalColorPoint(pLight1, input.worldPos, input.normal, surfaceColor) +
 		SpecularPhong(input.normal, input.worldPos - pLight1.Position, toCamera, specInt * 64.0f);
 
 	return directionalLightColor + pointLightColor;

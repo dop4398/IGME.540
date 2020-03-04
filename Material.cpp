@@ -1,6 +1,6 @@
 #include "Material.h"
 
-Material::Material(SimplePixelShader* ps, SimpleVertexShader* vs, DirectX::XMFLOAT4 colorTint)
+Material::Material(SimplePixelShader* ps, SimpleVertexShader* vs, DirectX::XMFLOAT4 colorTint, ID3D11ShaderResourceView* srv, ID3D11SamplerState* samplerState)
 {
 	pixelShader = ps;
 	vertexShader = vs;
@@ -8,7 +8,7 @@ Material::Material(SimplePixelShader* ps, SimpleVertexShader* vs, DirectX::XMFLO
 	specularIntensity = 0.5f;
 }
 
-Material::Material(SimplePixelShader* ps, SimpleVertexShader* vs, DirectX::XMFLOAT4 colorTint, float specularIntensity)
+Material::Material(SimplePixelShader* ps, SimpleVertexShader* vs, DirectX::XMFLOAT4 colorTint, float specularIntensity, ID3D11ShaderResourceView* srv, ID3D11SamplerState* samplerState)
 {
 	pixelShader = ps;
 	vertexShader = vs;
@@ -39,4 +39,14 @@ SimpleVertexShader* Material::GetVertexShader()
 float Material::GetSpecularIntensity()
 {
 	return specularIntensity;
+}
+
+ID3D11ShaderResourceView* Material::GetSRV()
+{
+	return srv;
+}
+
+ID3D11SamplerState* Material::GetSamplerState()
+{
+	return samplerState;
 }

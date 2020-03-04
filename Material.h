@@ -14,16 +14,23 @@ class Material
 
 	float specularIntensity;
 
+	ID3D11ShaderResourceView* srv;
+	ID3D11SamplerState* samplerState;
+
 public:
 	Material(
 		SimplePixelShader* ps,
 		SimpleVertexShader* vs,
-		DirectX::XMFLOAT4 colorTint);
+		DirectX::XMFLOAT4 colorTint,
+		ID3D11ShaderResourceView* srv,
+		ID3D11SamplerState* samplerState);
 	Material(
 		SimplePixelShader* ps,
 		SimpleVertexShader* vs,
 		DirectX::XMFLOAT4 colorTint,
-		float specularIntensity);
+		float specularIntensity,
+		ID3D11ShaderResourceView* srv,
+		ID3D11SamplerState* samplerState);
 
 	void SetColorTint(DirectX::XMFLOAT4 tint);
 
@@ -31,5 +38,7 @@ public:
 	SimplePixelShader* GetPixelShader();
 	SimpleVertexShader* GetVertexShader();
 	float GetSpecularIntensity();
+	ID3D11ShaderResourceView* GetSRV();
+	ID3D11SamplerState* GetSamplerState();
 };
 

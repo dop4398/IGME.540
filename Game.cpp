@@ -76,22 +76,6 @@ void Game::Init()
 	unsigned int size = vertexShader->GetBufferSize(0);
 	size = (size + 15) / 16 * 16;
 
-	// Texture releated init
-	CreateWICTextureFromFile(
-		device.Get(),
-		context.Get(),	// Passing in the context auto-generates mipmaps!!
-		GetFullPathTo_Wide(L"../../Assets/Textures/stone.png").c_str(),
-		nullptr,		// We don't need the texture ref ourselves
-		diffuseTexture1.GetAddressOf()); // We do need an SRV
-
-	CreateWICTextureFromFile(
-		device.Get(),
-		context.Get(),	// Passing in the context auto-generates mipmaps!!
-		GetFullPathTo_Wide(L"../../Assets/Textures/grass.png").c_str(),
-		nullptr,		// We don't need the texture ref ourselves
-		diffuseTexture2.GetAddressOf()); // We do need an SRV
-
-
 	// Describe the constant buffer
 	CD3D11_BUFFER_DESC cbDesc = {}; // Sets to all zeros
 	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -160,6 +144,31 @@ void Game::CreateBasicGeometry()
 	XMFLOAT3 normal = XMFLOAT3(0, 0, -1);
 	XMFLOAT2 uv = XMFLOAT2(0, 0);
 
+	// Texture releated init
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),	// Passing in the context auto-generates mipmaps!!
+		GetFullPathTo_Wide(L"../../Assets/Textures/stone.png").c_str(),
+		nullptr,		// We don't need the texture ref ourselves
+		diffuseTexture1.GetAddressOf()); // We do need an SRV
+
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),	// Passing in the context auto-generates mipmaps!!
+		GetFullPathTo_Wide(L"../../Assets/Textures/grass.png").c_str(),
+		nullptr,		// We don't need the texture ref ourselves
+		diffuseTexture2.GetAddressOf()); // We do need an SRV
+
+	// Describe the sampler state that I want
+	D3D11_SAMPLER_DESC sampDesc = {};
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+	sampDesc.MaxAnisotropy = 16;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	device->CreateSamplerState(&sampDesc, samplerOptions.GetAddressOf());
+
 
 	// mesh0 - triangle
 	Vertex vertices0[] =
@@ -174,12 +183,12 @@ void Game::CreateBasicGeometry()
 	int indices0[] = { 0, 1, 2, 3, 4, 5 };
 	// Add it to entities
 	entities.push_back(new Entity(new Mesh(
-		vertices0, 
-		6, 
-		indices0, 
-		6, 
+		vertices0,
+		6,
+		indices0,
+		6,
 		device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f))
+		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), diffuseTexture2.Get(), samplerOptions.Get())
 	));
 	// do it again to ensure sharing meshes works
 	entities.push_back(new Entity(new Mesh(
@@ -188,7 +197,7 @@ void Game::CreateBasicGeometry()
 		indices0,
 		6,
 		device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)) // material from our materials list
+		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), diffuseTexture2.Get(), samplerOptions.Get())
 	));
 
 
@@ -209,7 +218,7 @@ void Game::CreateBasicGeometry()
 		indices1,
 		6,
 		device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), 0.5f)
+		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), 0.5f, diffuseTexture2.Get(), samplerOptions.Get())
 	));
 
 
@@ -234,14 +243,14 @@ void Game::CreateBasicGeometry()
 			indices2,
 			9,
 			device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f))
+		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), diffuseTexture2.Get(), samplerOptions.Get())
 	));
 
 
 	// mesh3 - sphere
 	entities.push_back(new Entity(
 		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(0.1f, 0.8f, 0.7f, 1.0f), 1.0f)
+		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 0.1f, 0.1f, 1.0f), 1.0f, diffuseTexture1.Get(), samplerOptions.Get())
 	));
 	// mesh4 - cube
 	/*entities.push_back(new Entity(
@@ -333,11 +342,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		&pLights[0],
 		sizeof(PointLight));
 
-	float specInt = entities[entities.size() - 1]->GetMaterial()->GetSpecularIntensity();
-	pixelShader->SetData(
-		"specInt",
-		&specInt,
-		sizeof(float));
 	pixelShader->SetData(
 		"cameraPosition",
 		&camera->GetTransform()->GetPosition(),
@@ -352,6 +356,14 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Activate the current material's shaders
 		entities[i]->GetMaterial()->GetVertexShader()->SetShader();
 		entities[i]->GetMaterial()->GetPixelShader()->SetShader();
+
+		float specInt = entities[i]->GetMaterial()->GetSpecularIntensity();
+		pixelShader->SetFloat("specInt", entities[i]->GetMaterial()->GetSpecularIntensity());
+		pixelShader->SetShaderResourceView("diffuseTexture", entities[i]->GetMaterial()->GetSRV());
+		pixelShader->SetSamplerState("samplerOptions", entities[i]->GetMaterial()->GetSamplerState());
+
+		pixelShader->CopyAllBufferData();
+
 		// Collecting data locally
 		SimpleVertexShader* vsData = entities[i]->GetMaterial()->GetVertexShader();
 		vsData->SetFloat4("colorTint", entities[i]->GetMaterial()->GetColorTint());
