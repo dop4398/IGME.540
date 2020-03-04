@@ -250,7 +250,7 @@ void Game::CreateBasicGeometry()
 	// mesh3 - sphere
 	entities.push_back(new Entity(
 		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 0.1f, 0.1f, 1.0f), 1.0f, diffuseTexture1.Get(), samplerOptions.Get())
+		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), samplerOptions.Get())
 	));
 	// mesh4 - cube
 	/*entities.push_back(new Entity(
@@ -357,10 +357,11 @@ void Game::Draw(float deltaTime, float totalTime)
 		entities[i]->GetMaterial()->GetVertexShader()->SetShader();
 		entities[i]->GetMaterial()->GetPixelShader()->SetShader();
 
-		float specInt = entities[i]->GetMaterial()->GetSpecularIntensity();
 		pixelShader->SetFloat("specInt", entities[i]->GetMaterial()->GetSpecularIntensity());
-		pixelShader->SetShaderResourceView("diffuseTexture", entities[i]->GetMaterial()->GetSRV());
-		pixelShader->SetSamplerState("samplerOptions", entities[i]->GetMaterial()->GetSamplerState());
+		//pixelShader->SetShaderResourceView("diffuseTexture", entities[i]->GetMaterial()->GetSRV().Get());
+		//pixelShader->SetSamplerState("samplerOptions", entities[i]->GetMaterial()->GetSamplerState().Get());
+		pixelShader->SetShaderResourceView("diffuseTexture", diffuseTexture1.Get());
+		pixelShader->SetSamplerState("samplerOptions", samplerOptions.Get());
 
 		pixelShader->CopyAllBufferData();
 

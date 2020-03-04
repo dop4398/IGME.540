@@ -14,8 +14,8 @@ class Material
 
 	float specularIntensity;
 
-	ID3D11ShaderResourceView* srv;
-	ID3D11SamplerState* samplerState;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
 public:
 	Material(
@@ -38,7 +38,7 @@ public:
 	SimplePixelShader* GetPixelShader();
 	SimpleVertexShader* GetVertexShader();
 	float GetSpecularIntensity();
-	ID3D11ShaderResourceView* GetSRV();
-	ID3D11SamplerState* GetSamplerState();
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> GetSRV();
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> GetSamplerState();
 };
 

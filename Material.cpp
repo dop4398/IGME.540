@@ -41,12 +41,12 @@ float Material::GetSpecularIntensity()
 	return specularIntensity;
 }
 
-ID3D11ShaderResourceView* Material::GetSRV()
+Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Material::GetSRV()
 {
 	return srv;
 }
 
-ID3D11SamplerState* Material::GetSamplerState()
+Microsoft::WRL::ComPtr<ID3D11SamplerState> Material::GetSamplerState()
 {
 	return samplerState;
 }
