@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Vertex.h"
 #include <fstream>
+#include "WICTextureLoader.h"
 
 // Needed for a helper function to read compiled shader files from the hard drive
 #pragma comment(lib, "d3dcompiler.lib")
@@ -75,6 +76,22 @@ void Game::Init()
 	unsigned int size = vertexShader->GetBufferSize(0);
 	size = (size + 15) / 16 * 16;
 
+	// Texture releated init
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),	// Passing in the context auto-generates mipmaps!!
+		GetFullPathTo_Wide(L"../../Assets/Textures/stone.png").c_str(),
+		nullptr,		// We don't need the texture ref ourselves
+		diffuseTexture1.GetAddressOf()); // We do need an SRV
+
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),	// Passing in the context auto-generates mipmaps!!
+		GetFullPathTo_Wide(L"../../Assets/Textures/grass.png").c_str(),
+		nullptr,		// We don't need the texture ref ourselves
+		diffuseTexture2.GetAddressOf()); // We do need an SRV
+
+
 	// Describe the constant buffer
 	CD3D11_BUFFER_DESC cbDesc = {}; // Sets to all zeros
 	cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -89,19 +106,25 @@ void Game::Init()
 	// Initialize lights
 	DirectionalLight light1;
 	light1.ambientColor = XMFLOAT3(0.1f, 0.1f, 0.1f);
-	light1.diffuseColor = XMFLOAT3(1, 1, 0);
-	light1.direction = XMFLOAT3(1, -1, 0);
-	lights.push_back(light1);
+	light1.diffuseColor = XMFLOAT3(1, 1, 1);
+	light1.direction = XMFLOAT3(-1, 0, 0);
+	dLights.push_back(light1);
 	DirectionalLight light2;
 	light2.ambientColor = XMFLOAT3(0.1f, 0.1f, 0.1f);
 	light2.diffuseColor = XMFLOAT3(0, 1, 1);
 	light2.direction = XMFLOAT3(-1, -1, 0);
-	lights.push_back(light2);
+	dLights.push_back(light2);
 	DirectionalLight light3;
 	light3.ambientColor = XMFLOAT3(0.1f, 0.1f, 0.1f);
 	light3.diffuseColor = XMFLOAT3(1, 0, 1);
 	light3.direction = XMFLOAT3(1, 1, 0);
-	lights.push_back(light3);
+	dLights.push_back(light3);
+
+	PointLight pLight1;
+	pLight1.ambientColor = XMFLOAT3(0.1f, 0.1f, 0.1f);
+	pLight1.diffuseColor = XMFLOAT3(0, 0, 1);
+	pLight1.position = XMFLOAT3(-10, 0, 0);
+	pLights.push_back(pLight1);
 }
 
 // --------------------------------------------------------
@@ -186,7 +209,7 @@ void Game::CreateBasicGeometry()
 		indices1,
 		6,
 		device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f))
+		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), 0.5f)
 	));
 
 
@@ -215,11 +238,16 @@ void Game::CreateBasicGeometry()
 	));
 
 
-	// mesh3 - cone
+	// mesh3 - sphere
 	entities.push_back(new Entity(
 		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f))
+		new Material(pixelShader, vertexShader, XMFLOAT4(0.1f, 0.8f, 0.7f, 1.0f), 1.0f)
 	));
+	// mesh4 - cube
+	/*entities.push_back(new Entity(
+		new Mesh(GetFullPathTo("../../Assets/Models/cube.obj").c_str(), device),
+		new Material(pixelShader, vertexShader, XMFLOAT4(0.7f, 0.1f, 0.7f, 1.0f), 0.6f)
+	));*/
 }
 
 
@@ -244,7 +272,7 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	for (int i = 0; i < entities.size(); i++)
 	{
-		entities[i]->GetTransform()->Rotate(0, 1 * deltaTime, 0);
+		entities[i]->GetTransform()->Rotate(0, 0.5f * deltaTime, 0);
 		entities[i]->GetTransform()->CreateWorldMatrix();
 	}
 
@@ -290,16 +318,30 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	pixelShader->SetData(
 		"dLight1",
-		&lights[0],
+		&dLights[0],
 		sizeof(DirectionalLight));
 	pixelShader->SetData(
 		"dLight2",
-		&lights[1],
+		&dLights[1],
 		sizeof(DirectionalLight));
 	pixelShader->SetData(
 		"dLight3",
-		&lights[2],
+		&dLights[2],
 		sizeof(DirectionalLight));
+	pixelShader->SetData(
+		"pLight1",
+		&pLights[0],
+		sizeof(PointLight));
+
+	float specInt = entities[entities.size() - 1]->GetMaterial()->GetSpecularIntensity();
+	pixelShader->SetData(
+		"specInt",
+		&specInt,
+		sizeof(float));
+	pixelShader->SetData(
+		"cameraPosition",
+		&camera->GetTransform()->GetPosition(),
+		sizeof(XMFLOAT3));
 
 	pixelShader->CopyAllBufferData();
 	

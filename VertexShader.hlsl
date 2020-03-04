@@ -23,8 +23,7 @@ struct VertexShaderInput
 	float3 position		: POSITION;     // XYZ position
 	float3 normal		: NORMAL;
 	float2 uv			: TEXCOORD;
-
-	//float4 color		: COLOR;        // RGBA color
+	float3 tangent		: TANGENT;
 };
 
 // Struct representing the data we're sending down the pipeline
@@ -42,6 +41,9 @@ struct VertexToPixel
 	float4 position		: SV_POSITION;	// XYZW position (System Value Position)
 	float4 color		: COLOR;        // RGBA color
 	float3 normal		: NORMAL;
+	float2 uv			: TEXCOORD;
+	float3 tangent		: TANGENT;
+	float3 worldPos		: POSITION;
 };
 
 // --------------------------------------------------------
@@ -68,18 +70,26 @@ VertexToPixel main( VertexShaderInput input )
 	matrix wvp = mul(projection, mul(view, world));
 	output.position = mul(wvp, float4(input.position, 1.0f));
 
+	// Calculate the final world position of the vertex
+	output.worldPos = mul(world, float4(input.position, 1.0f)).xyz;
+
 	// Pass the normal through
 	// - This line is only valid if we're applying a uniform scale to the object.
 	// - To properly transform a normal using a non-uniform scale, you'll need to 
 	//   use the inverse transpose of the world matrix.
 	output.normal = mul((float3x3)world, input.normal);
+	output.normal = normalize(output.normal);
 
+	// Modify the tangent much like the normal
+	output.tangent = mul((float3x3)world, input.tangent);
+	output.tangent = normalize(output.tangent);
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer
 	// - We don't need to alter it here, but we do need to send it to the pixel shader
 	/*** colorTint applied here ***/
 	output.color = colorTint;
+	output.uv = input.uv;
 
 	// Whatever we return will make its way through the pipeline to the
 	// next programmable stage we're using (the pixel shader for now)

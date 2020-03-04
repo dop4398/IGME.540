@@ -52,6 +52,13 @@ private:
 	std::vector<Material*> materials;
 
 	// Lights
-	std::vector<DirectionalLight> lights = std::vector<DirectionalLight>();
+	std::vector<DirectionalLight> dLights = std::vector<DirectionalLight>();
+	std::vector<PointLight> pLights = std::vector<PointLight>();
+
+	// Texture related resources
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> diffuseTexture1;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> diffuseTexture2;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalMap;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerOptions;
 };
 
