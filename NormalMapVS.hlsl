@@ -17,10 +17,10 @@ cbuffer ExternalData : register(b0)
 // - Output is a single struct of data to pass down the pipeline
 // - Named "main" because that's the default the shader compiler looks for
 // --------------------------------------------------------
-VertexToPixel main( VertexShaderInput input )
+VertexToPixelNormalMap  main(VertexShaderInput input)
 {
 	// Set up output struct
-	VertexToPixel output;
+	VertexToPixelNormalMap output;
 
 	// Here we're essentially passing the input position directly through to the next
 	// stage (rasterizer), though it needs to be a 4-component vector now.  
@@ -43,6 +43,10 @@ VertexToPixel main( VertexShaderInput input )
 	//   use the inverse transpose of the world matrix.
 	output.normal = mul((float3x3)world, input.normal);
 	output.normal = normalize(output.normal);
+
+	// Modify the tangent much like the normal
+	output.tangent = mul((float3x3)world, input.tangent);
+	output.tangent = normalize(output.tangent);
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer
