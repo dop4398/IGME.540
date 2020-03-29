@@ -4,8 +4,6 @@
 cbuffer ExternalData : register(b0)
 {
 	DirectionalLight dLight1;
-	DirectionalLight dLight2;
-	DirectionalLight dLight3;
 
 	PointLight pLight1;
 
@@ -85,17 +83,49 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// Calculate the vector from the pixel's world position to the camera
 	float3 toCamera = normalize(cameraPosition - input.worldPos);
 
-	float4 directionalLightColor =
-		GetFinalColorDir(dLight1, input.normal, surfaceColor) +
-		SpecularPhong(input.normal, dLight1.Direction, toCamera, specInt * 64.0f); //+
-		//GetFinalColorDir(dLight2, input.normal, input.color) +
-		//GetFinalColorDir(dLight3, input.normal, input.color);
+	// Directional Light
+	float diffuse = Diffuse(input.normal, dLight1.Direction);
+	float spec = SpecularPhong(input.normal, dLight1.Direction, toCamera, specInt * 64.0f);
 
-	float4 pointLightColor =
-		GetFinalColorPoint(pLight1, input.worldPos, input.normal, surfaceColor) +
-		SpecularPhong(input.normal, input.worldPos - pLight1.Position, toCamera, specInt * 64.0f);
+	spec *= any(diffuse);
 
-	return directionalLightColor + pointLightColor;
+	float3 finalDLColor =
+		diffuse * dLight1.DiffuseColor * surfaceColor +
+		spec * dLight1.DiffuseColor;
+
+
+	// Point Light
+	float3 pointLightDirection = normalize(input.worldPos - pLight1.Position);
+	float pl_diffuse = Diffuse(input.normal, pointLightDirection);
+	float pl_spec = SpecularPhong(input.normal, pointLightDirection, toCamera, specInt * 64.0f);
+
+	pl_spec *= any(pl_diffuse);
+
+	float3 finalPLColor =
+		pl_diffuse * pLight1.DiffuseColor * surfaceColor +
+		pl_spec * pLight1.DiffuseColor;
+
+
+	float3 ambientColor =
+		dLight1.AmbientColor * surfaceColor +
+		pLight1.AmbientColor * surfaceColor;
+
+	float3 totalLight = finalDLColor + finalPLColor + ambientColor;
+
+
+	return float4(totalLight, 1);
+
+	//float4 directionalLightColor =
+	//	GetFinalColorDir(dLight1, input.normal, surfaceColor) +
+	//	SpecularPhong(input.normal, dLight1.Direction, toCamera, specInt * 64.0f); //+
+	//	//GetFinalColorDir(dLight2, input.normal, input.color) +
+	//	//GetFinalColorDir(dLight3, input.normal, input.color);
+
+	//float4 pointLightColor =
+	//	GetFinalColorPoint(pLight1, input.worldPos, input.normal, surfaceColor) +
+	//	SpecularPhong(input.normal, input.worldPos - pLight1.Position, toCamera, specInt * 64.0f);
+
+	//return directionalLightColor + pointLightColor;
 	//return pointLightColor;
 }
 

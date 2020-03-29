@@ -37,6 +37,10 @@ private:
 	// Entities
 	std::vector<Entity*> entities = std::vector<Entity*>();
 
+	// User input and entity swapping
+	int currentEntity;
+	bool prevTab;
+
 	Camera* camera;
 	
 	// Note the usage of ComPtr below
@@ -48,6 +52,12 @@ private:
 	SimplePixelShader* pixelShader;
 	SimpleVertexShader* vertexShader;
 
+	SimplePixelShader* pixelShaderNormalMap;
+	SimpleVertexShader* vertexShaderNormalMap;
+
+	SimplePixelShader* currentPS;
+	SimpleVertexShader* currentVS;
+
 	// Materials for Assignment 5
 	std::vector<Material*> materials;
 
@@ -58,7 +68,8 @@ private:
 	// Texture related resources
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> diffuseTexture1;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> diffuseTexture2;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalMap;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalMap1;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalMap2;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerOptions;
 };
 

@@ -3,10 +3,13 @@
 // For the DirectX Math library
 using namespace DirectX;
 
-Mesh::Mesh(Vertex* vertices, int numberOfVertices, int* indices, int numberOfIndices, Microsoft::WRL::ComPtr<ID3D11Device> device)
+Mesh::Mesh(Vertex* vertices, int numberOfVertices, unsigned int* indices, int numberOfIndices, Microsoft::WRL::ComPtr<ID3D11Device> device)
 {
 	// Set up the indices
 	this->numberOfIndices = numberOfIndices;
+
+	// Calculate tangents - must be done before creating buffers
+	CalculateTangents(vertices, numberOfVertices, indices, numberOfIndices);
 
 	// Create the VERTEX BUFFER description -----------------------------------
 	// - The description is created on the stack because we only need
@@ -225,7 +228,7 @@ Mesh::Mesh(const char* filename, Microsoft::WRL::ComPtr<ID3D11Device> device)
 	//    one, you'll need to write some extra code to handle cases when you don't.
 
 	// Calculate tangents - must be done before creating buffers
-	CalculateTangents(&verts[0], vertCounter, &indices[0], numberOfIndices);
+	CalculateTangents(&verts[0], vertCounter, &indices[0], vertCounter);
 
 	// Create the VERTEX BUFFER description -----------------------------------
 	D3D11_BUFFER_DESC vbd;

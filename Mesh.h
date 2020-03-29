@@ -18,7 +18,7 @@ public:
 	Mesh(
 		Vertex* vertices,
 		int numberOfVertices,
-		int* indices,
+		unsigned int* indices,
 		int numberOfIndices,
 		Microsoft::WRL::ComPtr<ID3D11Device> device);
 	Mesh(

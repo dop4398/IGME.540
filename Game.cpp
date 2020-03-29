@@ -27,6 +27,16 @@ Game::Game(HINSTANCE hInstance)
 		true)			   // Show extra stats (fps) in title bar?
 {
 
+	camera = 0;
+	currentEntity = 0;
+	prevTab = false;
+	pixelShader = 0;
+	vertexShader = 0;
+	pixelShaderNormalMap = 0;
+	vertexShaderNormalMap = 0;
+	currentPS = 0;
+	currentVS = 0;
+
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
 	CreateConsoleWindow(500, 120, 32, 120);
@@ -52,6 +62,10 @@ Game::~Game()
 
 	delete vertexShader;
 	delete pixelShader;
+	delete vertexShaderNormalMap;
+	delete pixelShaderNormalMap;
+	/*delete currentPS;
+	delete currentVS;*/
 	delete camera;
 }
 
@@ -123,9 +137,13 @@ void Game::LoadShaders()
 {
 	vertexShader = new SimpleVertexShader(device.Get(), context.Get(),
 		GetFullPathTo_Wide(L"VertexShader.cso").c_str());
-
 	pixelShader = new SimplePixelShader(device.Get(), context.Get(),
 		GetFullPathTo_Wide(L"PixelShader.cso").c_str());
+
+	vertexShaderNormalMap = new SimpleVertexShader(device.Get(), context.Get(),
+		GetFullPathTo_Wide(L"NormalMapVS.cso").c_str());
+	pixelShaderNormalMap = new SimplePixelShader(device.Get(), context.Get(),
+		GetFullPathTo_Wide(L"NormalMapPS.cso").c_str());
 }
 
 
@@ -148,16 +166,28 @@ void Game::CreateBasicGeometry()
 	CreateWICTextureFromFile(
 		device.Get(),
 		context.Get(),	// Passing in the context auto-generates mipmaps!!
-		GetFullPathTo_Wide(L"../../Assets/Textures/stone.png").c_str(),
+		GetFullPathTo_Wide(L"../../Assets/Textures/rock.png").c_str(),
 		nullptr,		// We don't need the texture ref ourselves
 		diffuseTexture1.GetAddressOf()); // We do need an SRV
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),	// Passing in the context auto-generates mipmaps!!
+		GetFullPathTo_Wide(L"../../Assets/Textures/rock_normals.png").c_str(),
+		nullptr,		// We don't need the texture ref ourselves
+		normalMap1.GetAddressOf()); // We do need an SRV
 
 	CreateWICTextureFromFile(
 		device.Get(),
 		context.Get(),	// Passing in the context auto-generates mipmaps!!
-		GetFullPathTo_Wide(L"../../Assets/Textures/grass.png").c_str(),
+		GetFullPathTo_Wide(L"../../Assets/Textures/cushion.png").c_str(),
 		nullptr,		// We don't need the texture ref ourselves
 		diffuseTexture2.GetAddressOf()); // We do need an SRV
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),	// Passing in the context auto-generates mipmaps!!
+		GetFullPathTo_Wide(L"../../Assets/Textures/cushion_normals.png").c_str(),
+		nullptr,		// We don't need the texture ref ourselves
+		normalMap2.GetAddressOf()); // We do need an SRV
 
 	// Describe the sampler state that I want
 	D3D11_SAMPLER_DESC sampDesc = {};
@@ -169,94 +199,21 @@ void Game::CreateBasicGeometry()
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	device->CreateSamplerState(&sampDesc, samplerOptions.GetAddressOf());
 
-
-	// mesh0 - triangle
-	Vertex vertices0[] =
-	{
-		{ XMFLOAT3(+0.0f, +0.4f, +0.0f), normal, uv },
-		{ XMFLOAT3(+0.2f, -0.1f, +0.0f), normal, uv },
-		{ XMFLOAT3(-0.2f, -0.1f, +0.0f), normal, uv },
-		{ XMFLOAT3(-0.2f, -0.1f, +0.0f), normal, uv },
-		{ XMFLOAT3(+0.2f, -0.1f, +0.0f), normal, uv },
-		{ XMFLOAT3(+0.0f, -0.6f, +0.0f), normal, uv }
-	};
-	int indices0[] = { 0, 1, 2, 3, 4, 5 };
-	// Add it to entities
-	entities.push_back(new Entity(new Mesh(
-		vertices0,
-		6,
-		indices0,
-		6,
-		device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), diffuseTexture2.Get(), samplerOptions.Get())
-	));
-	// do it again to ensure sharing meshes works
-	entities.push_back(new Entity(new Mesh(
-		vertices0,
-		6,
-		indices0,
-		6,
-		device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), diffuseTexture2.Get(), samplerOptions.Get())
-	));
-
-
-	// mesh1 - rectangle
-	Vertex vertices1[] =
-	{
-		{ XMFLOAT3(-0.9f, +0.9f, +0.0f), normal, uv },
-		{ XMFLOAT3(-0.4f, +0.9f, +0.0f), normal, uv },
-		{ XMFLOAT3(-0.4f, +0.0f, +0.0f), normal, uv },
-		{ XMFLOAT3(-0.4f, +0.0f, +0.0f), normal, uv },
-		{ XMFLOAT3(-0.9f, +0.0f, +0.0f), normal, uv },
-		{ XMFLOAT3(-0.9f, +0.9f, +0.0f), normal, uv }
-	};
-	int indices1[] = { 0, 1, 2, 3, 4, 5 };
-	entities.push_back(new Entity(new Mesh(
-		vertices1,
-		6,
-		indices1,
-		6,
-		device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), 0.5f, diffuseTexture2.Get(), samplerOptions.Get())
-	));
-
-
-	// mesh2 - triforce
-	Vertex vertices2[] =
-	{
-		{ XMFLOAT3(+0.4f, +0.0f, +0.0f), normal, uv },
-		{ XMFLOAT3(+0.5f, +0.3f, +0.0f), normal, uv },
-		{ XMFLOAT3(+0.6f, +0.0f, +0.0f), normal, uv },
-		{ XMFLOAT3(+0.6f, +0.0f, +0.0f), normal, uv },
-		{ XMFLOAT3(+0.7f, +0.3f, +0.0f), normal, uv },
-		{ XMFLOAT3(+0.8f, +0.0f, +0.0f), normal, uv },
-		{ XMFLOAT3(+0.5f, +0.3f, +0.0f), normal, uv },
-		{ XMFLOAT3(+0.6f, +0.6f, +0.0f), normal, uv },
-		{ XMFLOAT3(+0.7f, +0.3f, +0.0f), normal, uv }
-	};
-	int indices2[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-	entities.push_back(new Entity(
-		new Mesh(
-			vertices2,
-			9,
-			indices2,
-			9,
-			device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), diffuseTexture2.Get(), samplerOptions.Get())
-	));
-
-
-	// mesh3 - sphere
+	// mesh 1 - sphere
 	entities.push_back(new Entity(
 		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
+		new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get())
+	));
+	// mesh 2 - cube
+	entities.push_back(new Entity(
+		new Mesh(GetFullPathTo("../../Assets/Models/cube.obj").c_str(), device),
 		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), samplerOptions.Get())
 	));
-	// mesh4 - cube
-	/*entities.push_back(new Entity(
-		new Mesh(GetFullPathTo("../../Assets/Models/cube.obj").c_str(), device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(0.7f, 0.1f, 0.7f, 1.0f), 0.6f)
-	));*/
+	// mesh 3 - helix
+	entities.push_back(new Entity(
+		new Mesh(GetFullPathTo("../../Assets/Models/helix.obj").c_str(), device),
+		new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture2.Get(), normalMap2.Get(), samplerOptions.Get())
+	));
 }
 
 
@@ -279,15 +236,23 @@ void Game::OnResize()
 // --------------------------------------------------------
 void Game::Update(float deltaTime, float totalTime)
 {
-	for (int i = 0; i < entities.size(); i++)
-	{
-		entities[i]->GetTransform()->Rotate(0, 0.5f * deltaTime, 0);
-		entities[i]->GetTransform()->CreateWorldMatrix();
-	}
-
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
+
+	bool currentTab = (GetAsyncKeyState(VK_TAB) & 0x8000) != 0;
+	if (currentTab && !prevTab)
+	{
+		currentEntity++;
+		currentEntity %= entities.size();
+	}
+
+	// Save state for next frame
+	prevTab = currentTab;
+
+	// Rotate
+	entities[currentEntity]->GetTransform()->Rotate(0, 0.5f * deltaTime, 0);
+	entities[currentEntity]->GetTransform()->CreateWorldMatrix();
 
 	// Update the camera
 	camera->Update(deltaTime, this->hWnd);
@@ -324,77 +289,57 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - However, this isn't always the case (but might be for this course)
 	//context->IASetInputLayout(inputLayout.Get()); // Removed due to SimpleShader implementation
 
+	currentPS = entities[currentEntity]->GetMaterial()->GetPixelShader();
+	currentVS = entities[currentEntity]->GetMaterial()->GetVertexShader();
 
-	pixelShader->SetData(
-		"dLight1",
-		&dLights[0],
-		sizeof(DirectionalLight));
-	pixelShader->SetData(
-		"dLight2",
-		&dLights[1],
-		sizeof(DirectionalLight));
-	pixelShader->SetData(
-		"dLight3",
-		&dLights[2],
-		sizeof(DirectionalLight));
-	pixelShader->SetData(
-		"pLight1",
-		&pLights[0],
-		sizeof(PointLight));
+	// Activate the current material's shaders
+	currentVS->SetShader();
+	currentPS->SetShader();
 
-	pixelShader->SetData(
-		"cameraPosition",
-		&camera->GetTransform()->GetPosition(),
-		sizeof(XMFLOAT3));
+	currentPS->SetData("dLight1", &dLights[0], sizeof(DirectionalLight));
+	currentPS->SetData("pLight1", &pLights[0], sizeof(PointLight));
+	currentPS->SetFloat3("cameraPosition", camera->GetTransform()->GetPosition());
+	currentPS->SetFloat("specInt", entities[currentEntity]->GetMaterial()->GetSpecularIntensity());
+	currentPS->CopyAllBufferData();
 
-	pixelShader->CopyAllBufferData();
-	
-
-	// Loop through all of the entities being drawn
-	for (int i = 0; i < entities.size(); i++)
+	currentPS->SetShaderResourceView("diffuseTexture", entities[currentEntity]->GetMaterial()->GetSRV().Get());
+	// check for normal map
+	if (entities[currentEntity]->GetMaterial()->GetNormalMap().Get() != nullptr)
 	{
-		// Activate the current material's shaders
-		entities[i]->GetMaterial()->GetVertexShader()->SetShader();
-		entities[i]->GetMaterial()->GetPixelShader()->SetShader();
+		currentPS->SetShaderResourceView("normalMap", entities[currentEntity]->GetMaterial()->GetNormalMap().Get());
+	}
+	currentPS->SetSamplerState("samplerOptions", entities[currentEntity]->GetMaterial()->GetSamplerState().Get());
 
-		pixelShader->SetFloat("specInt", entities[i]->GetMaterial()->GetSpecularIntensity());
-		//pixelShader->SetShaderResourceView("diffuseTexture", entities[i]->GetMaterial()->GetSRV().Get());
-		//pixelShader->SetSamplerState("samplerOptions", entities[i]->GetMaterial()->GetSamplerState().Get());
-		pixelShader->SetShaderResourceView("diffuseTexture", diffuseTexture1.Get());
-		pixelShader->SetSamplerState("samplerOptions", samplerOptions.Get());
 
-		pixelShader->CopyAllBufferData();
+	// Collecting data locally
+	SimpleVertexShader* vsData = currentVS;
+	vsData->SetFloat4("colorTint", entities[currentEntity]->GetMaterial()->GetColorTint());
+	vsData->SetMatrix4x4("world", entities[currentEntity]->GetTransform()->GetWorldMatrix());
+	vsData->SetMatrix4x4("view", camera->GetView());
+	vsData->SetMatrix4x4("projection", camera->GetProjection());
 
-		// Collecting data locally
-		SimpleVertexShader* vsData = entities[i]->GetMaterial()->GetVertexShader();
-		vsData->SetFloat4("colorTint", entities[i]->GetMaterial()->GetColorTint());
-		vsData->SetMatrix4x4("world", entities[i]->GetTransform()->GetWorldMatrix());
-		vsData->SetMatrix4x4("view", camera->GetView());
-		vsData->SetMatrix4x4("projection", camera->GetProjection());
+	vsData->CopyAllBufferData();
 
-		vsData->CopyAllBufferData();
-
-		// Set buffers in the input assembler
-		//  - Do this ONCE PER OBJECT you're drawing, since each object might
-		//    have different geometry.
-		//  - for this demo, this step *could* simply be done once during Init(),
-		//    but I'm doing it here because it's often done multiple times per frame
-		//    in a larger application/game
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
+	// Set buffers in the input assembler
+	//  - Do this ONCE PER OBJECT you're drawing, since each object might
+	//    have different geometry.
+	//  - for this demo, this step *could* simply be done once during Init(),
+	//    but I'm doing it here because it's often done multiple times per frame
+	//    in a larger application/game
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
 
 	
-		context->IASetVertexBuffers(0, 1, entities[i]->GetMesh()->GetVertexBuffer().GetAddressOf(), &stride, &offset);
-		context->IASetIndexBuffer(entities[i]->GetMesh()->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-		//  - Do this ONCE PER OBJECT you intend to draw
-		//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
-		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-		//     vertices in the currently set VERTEX BUFFER
-		context->DrawIndexed(
-			entities[i]->GetMesh()->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
-	}
+	context->IASetVertexBuffers(0, 1, entities[currentEntity]->GetMesh()->GetVertexBuffer().GetAddressOf(), &stride, &offset);
+	context->IASetIndexBuffer(entities[currentEntity]->GetMesh()->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+	//  - Do this ONCE PER OBJECT you intend to draw
+	//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
+	//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
+	//     vertices in the currently set VERTEX BUFFER
+	context->DrawIndexed(
+		entities[currentEntity]->GetMesh()->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+		0,     // Offset to the first index we want to use
+		0);    // Offset to add to each index when looking up vertices
 
 
 	// Present the back buffer to the user

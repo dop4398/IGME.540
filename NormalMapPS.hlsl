@@ -4,8 +4,6 @@
 cbuffer ExternalData : register(b0)
 {
 	DirectionalLight dLight1;
-	DirectionalLight dLight2;
-	DirectionalLight dLight3;
 
 	PointLight pLight1;
 
@@ -78,36 +76,69 @@ float4 GetFinalColorPoint(PointLight pointLight, float3 worldPos, float3 surface
 // --------------------------------------------------------
 float4 main(VertexToPixelNormalMap input) : SV_TARGET
 {
-	input.normal = normalize(input.normal);
-	input.tangent = normalize(input.tangent);
-
 	float3 surfaceColor = diffuseTexture.Sample(samplerOptions, input.uv).rgb;
 	surfaceColor *= input.color.rgb;
 
 	// grab the normal map sample and unpack the normal
 	float3 normalFromMap = normalMap.Sample(samplerOptions, input.uv).rgb * 2 - 1;
 
-	// Create the TBN matrix
+	// Create the TBN matrix for normal mapping
 	//  We need to transform the unpacked normal from tangent space into world space
-	float3 N = input.normal; // must be normalized
-	float3 T = input.tangent; // must be normalized
+	float3 N = normalize(input.normal); // must be normalized
+	float3 T = normalize(input.tangent); // must be normalized
 	T = normalize(T - N * dot(T, N)); // Gram-Schmidt orthogonalization
 	float3 B = cross(T, N);
 	float3x3 TBN = float3x3(T, B, N);
 
+	// Update the normal
+	input.normal = normalize(mul(normalFromMap, TBN));
+
 	// Calculate the vector from the pixel's world position to the camera
 	float3 toCamera = normalize(cameraPosition - input.worldPos);
 
-	float4 directionalLightColor =
-		GetFinalColorDir(dLight1, input.normal, surfaceColor) +
-		SpecularPhong(input.normal, dLight1.Direction, toCamera, specInt * 64.0f); //+
-		//GetFinalColorDir(dLight2, input.normal, input.color) +
-		//GetFinalColorDir(dLight3, input.normal, input.color);
 
-	float4 pointLightColor =
-		GetFinalColorPoint(pLight1, input.worldPos, input.normal, surfaceColor) +
-		SpecularPhong(input.normal, input.worldPos - pLight1.Position, toCamera, specInt * 64.0f);
+	// Directional Light
+	float diffuse = Diffuse(input.normal, dLight1.Direction);
+	float spec = SpecularPhong(input.normal, dLight1.Direction, toCamera, specInt * 64.0f);
 
-	return directionalLightColor + pointLightColor;
+	spec *= any(diffuse);
+
+	float3 finalDLColor =
+		diffuse * dLight1.DiffuseColor * surfaceColor +
+		spec * dLight1.DiffuseColor;
+
+
+	// Point Light
+	float3 pointLightDirection = normalize(input.worldPos - pLight1.Position);
+	float pl_diffuse = Diffuse(input.normal, pointLightDirection);
+	float pl_spec = SpecularPhong(input.normal, pointLightDirection, toCamera, specInt * 64.0f);
+
+	pl_spec *= any(pl_diffuse);
+
+	float3 finalPLColor =
+		pl_diffuse * pLight1.DiffuseColor * surfaceColor +
+		pl_spec * pLight1.DiffuseColor;
+
+
+	float3 ambientColor =
+		dLight1.AmbientColor * surfaceColor +
+		pLight1.AmbientColor * surfaceColor;
+
+	float3 totalLight = finalDLColor + finalPLColor + ambientColor;
+
+
+	return float4(totalLight, 1);
+
+	//float4 directionalLightColor =
+	//	GetFinalColorDir(dLight1, input.normal, surfaceColor) +
+	//	SpecularPhong(input.normal, dLight1.Direction, toCamera, specInt * 64.0f); //+
+	//	//GetFinalColorDir(dLight2, input.normal, input.color) +
+	//	//GetFinalColorDir(dLight3, input.normal, input.color);
+
+	//float4 pointLightColor =
+	//	GetFinalColorPoint(pLight1, input.worldPos, input.normal, surfaceColor) +
+	//	SpecularPhong(input.normal, input.worldPos - pLight1.Position, toCamera, specInt * 64.0f);
+
+	//return directionalLightColor + pointLightColor;
 }
 
