@@ -204,16 +204,6 @@ void Game::CreateBasicGeometry()
 		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
 		new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get())
 	));
-	// mesh 2 - cube
-	entities.push_back(new Entity(
-		new Mesh(GetFullPathTo("../../Assets/Models/cube.obj").c_str(), device),
-		new Material(pixelShader, vertexShader, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), samplerOptions.Get())
-	));
-	// mesh 3 - helix
-	entities.push_back(new Entity(
-		new Mesh(GetFullPathTo("../../Assets/Models/helix.obj").c_str(), device),
-		new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture2.Get(), normalMap2.Get(), samplerOptions.Get())
-	));
 }
 
 
@@ -240,19 +230,11 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	bool currentTab = (GetAsyncKeyState(VK_TAB) & 0x8000) != 0;
-	if (currentTab && !prevTab)
+	
+	for(Entity* ent : entities)
 	{
-		currentEntity++;
-		currentEntity %= entities.size();
+		ent->GetTransform()->CreateWorldMatrix();
 	}
-
-	// Save state for next frame
-	prevTab = currentTab;
-
-	// Rotate
-	entities[currentEntity]->GetTransform()->Rotate(0, 0.5f * deltaTime, 0);
-	entities[currentEntity]->GetTransform()->CreateWorldMatrix();
 
 	// Update the camera
 	camera->Update(deltaTime, this->hWnd);
@@ -289,57 +271,74 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - However, this isn't always the case (but might be for this course)
 	//context->IASetInputLayout(inputLayout.Get()); // Removed due to SimpleShader implementation
 
-	currentPS = entities[currentEntity]->GetMaterial()->GetPixelShader();
-	currentVS = entities[currentEntity]->GetMaterial()->GetVertexShader();
-
-	// Activate the current material's shaders
+	
+	//==========================================================================
+	// Band-aid code below
+	//  Which pixel shader do we use for lights and camera when we have a bunch?
+	//  Currently using the first entity's PS
+	// =========================================================================
+	currentPS = entities[0]->GetMaterial()->GetPixelShader();
+	currentVS = entities[0]->GetMaterial()->GetVertexShader();
 	currentVS->SetShader();
 	currentPS->SetShader();
 
 	currentPS->SetData("dLight1", &dLights[0], sizeof(DirectionalLight));
 	currentPS->SetData("pLight1", &pLights[0], sizeof(PointLight));
 	currentPS->SetFloat3("cameraPosition", camera->GetTransform()->GetPosition());
-	currentPS->SetFloat("specInt", entities[currentEntity]->GetMaterial()->GetSpecularIntensity());
-	currentPS->CopyAllBufferData();
 
-	currentPS->SetShaderResourceView("diffuseTexture", entities[currentEntity]->GetMaterial()->GetSRV().Get());
-	// check for normal map
-	if (entities[currentEntity]->GetMaterial()->GetNormalMap().Get() != nullptr)
+	// loop through entities
+	for (Entity* ent : entities)
 	{
-		currentPS->SetShaderResourceView("normalMap", entities[currentEntity]->GetMaterial()->GetNormalMap().Get());
+		currentPS = ent->GetMaterial()->GetPixelShader();
+		currentVS = ent->GetMaterial()->GetVertexShader();
+
+		// Activate the current material's shaders
+		currentVS->SetShader();
+		currentPS->SetShader();
+
+		currentPS->SetFloat("specInt", ent->GetMaterial()->GetSpecularIntensity());
+		currentPS->CopyAllBufferData();
+
+		currentPS->SetShaderResourceView("diffuseTexture", ent->GetMaterial()->GetSRV().Get());
+		// check for normal map
+		if (ent->GetMaterial()->GetNormalMap().Get() != nullptr)
+		{
+			currentPS->SetShaderResourceView("normalMap", ent->GetMaterial()->GetNormalMap().Get());
+		}
+		currentPS->SetSamplerState("samplerOptions", ent->GetMaterial()->GetSamplerState().Get());
+
+
+		// Collecting data locally
+		SimpleVertexShader* vsData = currentVS;
+		vsData->SetFloat4("colorTint", ent->GetMaterial()->GetColorTint());
+		vsData->SetMatrix4x4("world", ent->GetTransform()->GetWorldMatrix());
+		vsData->SetMatrix4x4("view", camera->GetView());
+		vsData->SetMatrix4x4("projection", camera->GetProjection());
+
+		vsData->CopyAllBufferData();
+
+		// Set buffers in the input assembler
+		//  - Do this ONCE PER OBJECT you're drawing, since each object might
+		//    have different geometry.
+		//  - for this demo, this step *could* simply be done once during Init(),
+		//    but I'm doing it here because it's often done multiple times per frame
+		//    in a larger application/game
+		UINT stride = sizeof(Vertex);
+		UINT offset = 0;
+
+
+		context->IASetVertexBuffers(0, 1, ent->GetMesh()->GetVertexBuffer().GetAddressOf(), &stride, &offset);
+		context->IASetIndexBuffer(ent->GetMesh()->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+		//  - Do this ONCE PER OBJECT you intend to draw
+		//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
+		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
+		//     vertices in the currently set VERTEX BUFFER
+		context->DrawIndexed(
+			ent->GetMesh()->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+			0,     // Offset to the first index we want to use
+			0);    // Offset to add to each index when looking up vertices
 	}
-	currentPS->SetSamplerState("samplerOptions", entities[currentEntity]->GetMaterial()->GetSamplerState().Get());
-
-
-	// Collecting data locally
-	SimpleVertexShader* vsData = currentVS;
-	vsData->SetFloat4("colorTint", entities[currentEntity]->GetMaterial()->GetColorTint());
-	vsData->SetMatrix4x4("world", entities[currentEntity]->GetTransform()->GetWorldMatrix());
-	vsData->SetMatrix4x4("view", camera->GetView());
-	vsData->SetMatrix4x4("projection", camera->GetProjection());
-
-	vsData->CopyAllBufferData();
-
-	// Set buffers in the input assembler
-	//  - Do this ONCE PER OBJECT you're drawing, since each object might
-	//    have different geometry.
-	//  - for this demo, this step *could* simply be done once during Init(),
-	//    but I'm doing it here because it's often done multiple times per frame
-	//    in a larger application/game
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-
 	
-	context->IASetVertexBuffers(0, 1, entities[currentEntity]->GetMesh()->GetVertexBuffer().GetAddressOf(), &stride, &offset);
-	context->IASetIndexBuffer(entities[currentEntity]->GetMesh()->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-	//  - Do this ONCE PER OBJECT you intend to draw
-	//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
-	//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-	//     vertices in the currently set VERTEX BUFFER
-	context->DrawIndexed(
-		entities[currentEntity]->GetMesh()->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-		0,     // Offset to the first index we want to use
-		0);    // Offset to add to each index when looking up vertices
 
 
 	// Present the back buffer to the user
