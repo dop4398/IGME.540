@@ -162,7 +162,12 @@ void Game::CreateBasicGeometry()
 	XMFLOAT3 normal = XMFLOAT3(0, 0, -1);
 	XMFLOAT2 uv = XMFLOAT2(0, 0);
 
-	// Texture releated init
+
+
+	// ********************************************************
+	// Texture initialization
+	// ********************************************************
+
 	CreateWICTextureFromFile(
 		device.Get(),
 		context.Get(),	// Passing in the context auto-generates mipmaps!!
@@ -176,19 +181,6 @@ void Game::CreateBasicGeometry()
 		nullptr,		// We don't need the texture ref ourselves
 		normalMap1.GetAddressOf()); // We do need an SRV
 
-	CreateWICTextureFromFile(
-		device.Get(),
-		context.Get(),	// Passing in the context auto-generates mipmaps!!
-		GetFullPathTo_Wide(L"../../Assets/Textures/cushion.png").c_str(),
-		nullptr,		// We don't need the texture ref ourselves
-		diffuseTexture2.GetAddressOf()); // We do need an SRV
-	CreateWICTextureFromFile(
-		device.Get(),
-		context.Get(),	// Passing in the context auto-generates mipmaps!!
-		GetFullPathTo_Wide(L"../../Assets/Textures/cushion_normals.png").c_str(),
-		nullptr,		// We don't need the texture ref ourselves
-		normalMap2.GetAddressOf()); // We do need an SRV
-
 	// Describe the sampler state that I want
 	D3D11_SAMPLER_DESC sampDesc = {};
 	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -199,7 +191,19 @@ void Game::CreateBasicGeometry()
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	device->CreateSamplerState(&sampDesc, samplerOptions.GetAddressOf());
 
-	// mesh 1 - sphere
+
+
+	// ********************************************************
+	// Entity initialization
+	// ********************************************************
+
+	// sphere entity
+	entities.push_back(new Entity(
+		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
+		new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get())
+	));
+
+	// other sphere entity
 	entities.push_back(new Entity(
 		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
 		new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get())
@@ -230,7 +234,19 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	
+
+	// ************************************************************************
+	// Collision testing
+	if (GetAsyncKeyState(VK_UP)) // UP
+		entities[0]->GetTransform()->MoveAbsolute(0.0f, 0.0001f, 0.0f);
+	if (GetAsyncKeyState(VK_DOWN)) // DOWN
+		entities[0]->GetTransform()->MoveAbsolute(0.0f, -0.0001f, 0.0f);
+	if (GetAsyncKeyState(VK_LEFT)) // LEFT
+		entities[0]->GetTransform()->MoveAbsolute(-0.0001f, 0.0f, 0.0f);
+	if (GetAsyncKeyState(VK_RIGHT)) // RIGHT
+		entities[0]->GetTransform()->MoveAbsolute(0.0001f, 0.0f, 0.0f);
+	// ************************************************************************
+
 	for(Entity* ent : entities)
 	{
 		ent->GetTransform()->CreateWorldMatrix();
