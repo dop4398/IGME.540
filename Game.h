@@ -9,6 +9,8 @@
 #include "Material.h"
 #include "Lights.h"
 #include <vector>
+#include "TerrainMesh.h"
+
 
 class Game 
 	: public DXCore
@@ -71,5 +73,27 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalMap1;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalMap2;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerOptions;
+
+
+	// Terrain additions
+	Entity* terrainEntity;
+	Mesh* terrainMesh;
+	SimplePixelShader* terrainPS;
+
+
+	// Blend (or "splat") map
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainBlendMapSRV;
+
+	// Textures
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainTexture0SRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainTexture1SRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainTexture2SRV;
+
+	// Normal maps
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainNormals0SRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainNormals1SRV;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainNormals2SRV;
+
+
 };
 

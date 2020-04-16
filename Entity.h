@@ -4,6 +4,8 @@
 #include "Transform.h"
 #include "Mesh.h"
 #include "Material.h"
+#include "Camera.h"
+#include <DirectXMath.h>
 
 class Entity
 {
@@ -16,6 +18,8 @@ public:
 	~Entity();
 
 	void Draw();
+	void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, SimpleVertexShader* vs, SimplePixelShader* ps, Camera* camera);
+
 
 	Mesh* GetMesh();
 	Transform* GetTransform();

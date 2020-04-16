@@ -15,6 +15,8 @@ private:
 	int numberOfIndices;
 
 public:
+	Mesh();
+
 	Mesh(
 		Vertex* vertices,
 		int numberOfVertices,
@@ -27,6 +29,9 @@ public:
 	~Mesh();
 
 	void CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices, int numIndices);
+	void CreateBuffers(Vertex* vertexes, unsigned int* indexes, int indicesNum, int vertexsNum, Microsoft::WRL::ComPtr<ID3D11Device> deviceTwo2);
+	void SetBuffersAndDraw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context);
+
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetIndexBuffer();

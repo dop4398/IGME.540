@@ -36,6 +36,9 @@ Game::Game(HINSTANCE hInstance)
 	vertexShaderNormalMap = 0;
 	currentPS = 0;
 	currentVS = 0;
+	terrainEntity = 0;
+	terrainMesh = 0;
+	terrainPS = 0;
 
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
@@ -67,6 +70,10 @@ Game::~Game()
 	/*delete currentPS;
 	delete currentVS;*/
 	delete camera;
+
+	delete terrainPS;
+	delete terrainMesh;
+	delete terrainEntity;
 }
 
 // --------------------------------------------------------
@@ -99,7 +106,16 @@ void Game::Init()
 
 	// Create the camera
 	//camera = new Camera(x, y, z, aspectRatio, mouseLookSpeed);
-	camera = new Camera(0.0f, 0.0f, -5.0f, (float)(this->width / this->height), 2.0f);
+	camera = new Camera(0.0f, 3.0f, -10.0f, (float)(this->width / this->height), 2.0f);
+
+	// Add Terrain Relevent Textures
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/valley_splat.png").c_str(), 0, &terrainBlendMapSRV);
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/snow.jpg").c_str(), 0, &terrainTexture0SRV);
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/grass3.png").c_str(), 0, &terrainTexture1SRV);
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/mountain3.png").c_str(), 0, &terrainTexture2SRV);
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/snow_normals.jpg").c_str(), 0, &terrainNormals0SRV);
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/grass3_normals.png").c_str(), 0, &terrainNormals1SRV);
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/mountain3_normals.png").c_str(), 0, &terrainNormals2SRV);
 
 	// Initialize lights
 	DirectionalLight light1;
@@ -144,6 +160,12 @@ void Game::LoadShaders()
 		GetFullPathTo_Wide(L"NormalMapVS.cso").c_str());
 	pixelShaderNormalMap = new SimplePixelShader(device.Get(), context.Get(),
 		GetFullPathTo_Wide(L"NormalMapPS.cso").c_str());
+
+	// Terrain Specific Pixel Shader
+	terrainPS = new SimplePixelShader(
+		device.Get(),
+		context.Get(),
+		GetFullPathTo_Wide(L"TerrainPS.cso").c_str());
 }
 
 
@@ -181,6 +203,8 @@ void Game::CreateBasicGeometry()
 		nullptr,		// We don't need the texture ref ourselves
 		normalMap1.GetAddressOf()); // We do need an SRV
 
+	
+
 	// Describe the sampler state that I want
 	D3D11_SAMPLER_DESC sampDesc = {};
 	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -208,6 +232,22 @@ void Game::CreateBasicGeometry()
 		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
 		new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get())
 	));
+
+
+	// Terrain Creation
+	terrainMesh = new TerrainMesh(
+		device,
+		GetFullPathTo("../../Assets/Textures/valley.raw16").c_str(),
+		513,
+		513,
+		BitDepth_16,
+		5.0f,
+		0.05f,
+		1.0f);
+
+	terrainEntity = new Entity(terrainMesh, nullptr);
+
+
 }
 
 
@@ -338,14 +378,16 @@ void Game::Draw(float deltaTime, float totalTime)
 		currentPS->SetSamplerState("samplerOptions", ent->GetMaterial()->GetSamplerState().Get());
 
 
+		ent->Draw(context, currentVS, currentPS, camera);
+
 		// Collecting data locally
-		SimpleVertexShader* vsData = currentVS;
+		/*SimpleVertexShader* vsData = currentVS;
 		vsData->SetFloat4("colorTint", ent->GetMaterial()->GetColorTint());
 		vsData->SetMatrix4x4("world", ent->GetTransform()->GetWorldMatrix());
 		vsData->SetMatrix4x4("view", camera->GetView());
 		vsData->SetMatrix4x4("projection", camera->GetProjection());
 
-		vsData->CopyAllBufferData();
+		vsData->CopyAllBufferData();*/
 
 		// Set buffers in the input assembler
 		//  - Do this ONCE PER OBJECT you're drawing, since each object might
@@ -353,22 +395,62 @@ void Game::Draw(float deltaTime, float totalTime)
 		//  - for this demo, this step *could* simply be done once during Init(),
 		//    but I'm doing it here because it's often done multiple times per frame
 		//    in a larger application/game
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
 
 
-		context->IASetVertexBuffers(0, 1, ent->GetMesh()->GetVertexBuffer().GetAddressOf(), &stride, &offset);
-		context->IASetIndexBuffer(ent->GetMesh()->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-		//  - Do this ONCE PER OBJECT you intend to draw
-		//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
-		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-		//     vertices in the currently set VERTEX BUFFER
-		context->DrawIndexed(
-			ent->GetMesh()->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
+		//UINT stride = sizeof(Vertex);
+		//UINT offset = 0;
+
+
+		//context->IASetVertexBuffers(0, 1, ent->GetMesh()->GetVertexBuffer().GetAddressOf(), &stride, &offset);
+		//context->IASetIndexBuffer(ent->GetMesh()->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
+		////  - Do this ONCE PER OBJECT you intend to draw
+		////  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
+		////  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
+		////     vertices in the currently set VERTEX BUFFER
+		//context->DrawIndexed(
+		//	ent->GetMesh()->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
+		//	0,     // Offset to the first index we want to use
+		//	0);    // Offset to add to each index when looking up vertices
 	}
-	
+
+	// Terrain Drawing
+	//{
+		vertexShader->SetShader();
+		terrainPS->SetShader();
+
+		terrainPS->SetFloat("lightIntensity", 1.0f);
+		terrainPS->SetFloat3("lightColor", XMFLOAT3(0.8f, 0.8f, 0.8f));
+		terrainPS->SetFloat3("lightDirection", XMFLOAT3(1, -1, 1));
+
+		/*terrainPS->SetFloat("pointLightIntensity", 1.0f);
+		terrainPS->SetFloat("pointLightRange", 10.0f);
+		terrainPS->SetFloat3("pointLightColor", XMFLOAT3(1, 1, 1));
+		terrainPS->SetFloat3("pointLightPos", lightEntity->GetTransform()->GetPosition());*/
+
+		terrainPS->SetFloat3("environmentAmbientColor", XMFLOAT3(0.50f, 0.5f, 0.5f));
+
+		terrainPS->SetFloat3("cameraPosition", camera->GetTransform()->GetPosition());
+
+		terrainPS->SetFloat("uvScale0", 50.0f);
+		terrainPS->SetFloat("uvScale1", 50.0f);
+		terrainPS->SetFloat("uvScale2", 50.0f);
+
+		terrainPS->SetFloat("specularAdjust", 0.0f);
+
+		terrainPS->CopyAllBufferData();
+
+		// Set texture resources for the next draw
+		terrainPS->SetShaderResourceView("blendMap", terrainBlendMapSRV.Get());
+		terrainPS->SetShaderResourceView("texture0", terrainTexture0SRV.Get());
+		terrainPS->SetShaderResourceView("texture1", terrainTexture1SRV.Get());
+		terrainPS->SetShaderResourceView("texture2", terrainTexture2SRV.Get());
+		terrainPS->SetShaderResourceView("normalMap0", terrainNormals0SRV.Get());
+		terrainPS->SetShaderResourceView("normalMap1", terrainNormals1SRV.Get());
+		terrainPS->SetShaderResourceView("normalMap2", terrainNormals2SRV.Get());
+		terrainPS->SetSamplerState("samplerOptions", samplerOptions.Get());
+
+		terrainEntity->Draw(context, vertexShader, terrainPS, camera);
+	//}
 
 
 	// Present the back buffer to the user
