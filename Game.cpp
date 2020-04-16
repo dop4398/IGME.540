@@ -238,13 +238,27 @@ void Game::Update(float deltaTime, float totalTime)
 	// ************************************************************************
 	// Collision testing
 	if (GetAsyncKeyState(VK_UP)) // UP
-		entities[0]->GetTransform()->MoveAbsolute(0.0f, 0.0001f, 0.0f);
+		entities[0]->GetTransform()->MoveAbsolute(0.0f, 0.0002f, 0.0f);
 	if (GetAsyncKeyState(VK_DOWN)) // DOWN
-		entities[0]->GetTransform()->MoveAbsolute(0.0f, -0.0001f, 0.0f);
+		entities[0]->GetTransform()->MoveAbsolute(0.0f, -0.0002f, 0.0f);
 	if (GetAsyncKeyState(VK_LEFT)) // LEFT
-		entities[0]->GetTransform()->MoveAbsolute(-0.0001f, 0.0f, 0.0f);
+		entities[0]->GetTransform()->MoveAbsolute(-0.0002f, 0.0f, 0.0f);
 	if (GetAsyncKeyState(VK_RIGHT)) // RIGHT
-		entities[0]->GetTransform()->MoveAbsolute(0.0001f, 0.0f, 0.0f);
+		entities[0]->GetTransform()->MoveAbsolute(0.0002f, 0.0f, 0.0f);
+
+	// If distance apart is less than or equal to the sum of the radii, then collision
+	if (sqrt(
+		pow(entities[0]->GetTransform()->GetPosition().x - entities[1]->GetTransform()->GetPosition().x, 2) +
+		pow(entities[0]->GetTransform()->GetPosition().y - entities[1]->GetTransform()->GetPosition().y, 2) +
+		pow(entities[0]->GetTransform()->GetPosition().z - entities[1]->GetTransform()->GetPosition().z, 2))
+		<= 1)
+	{
+		entities[0]->GetMaterial()->SetColorTint(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
+	}
+	else
+	{
+		entities[0]->GetMaterial()->SetColorTint(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+	}
 	// ************************************************************************
 
 	for(Entity* ent : entities)
