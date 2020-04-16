@@ -11,6 +11,7 @@ class Transform
 
 public:
 	Transform();
+	Transform(DirectX::XMFLOAT3 _position);
 	~Transform();
 
 	void CreateWorldMatrix();

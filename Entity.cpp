@@ -6,6 +6,13 @@ Entity::Entity(Mesh* mesh, Material* material)
 	this->material = material;
 }
 
+Entity::Entity(Mesh* mesh, Material* material, DirectX::XMFLOAT3 _position)
+{
+	this->mesh = mesh;
+	this->material = material;
+	this->transform = Transform(_position);
+}
+
 Entity::~Entity()
 {
 	delete mesh;

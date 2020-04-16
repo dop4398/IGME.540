@@ -15,6 +15,7 @@ class Entity
 
 public:
 	Entity(Mesh* mesh, Material* material);
+	Entity(Mesh* mesh, Material* material, DirectX::XMFLOAT3 _position);
 	~Entity();
 
 	void Draw();

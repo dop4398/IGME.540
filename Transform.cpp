@@ -13,6 +13,14 @@ Transform::Transform()
 	XMStoreFloat4x4(&world, XMMatrixIdentity());
 }
 
+Transform::Transform(DirectX::XMFLOAT3 _position)
+{
+	position = _position;
+	rotation = { 0, 0, 0 };
+	scale = { 1, 1, 1 };
+	XMStoreFloat4x4(&world, XMMatrixIdentity());
+}
+
 
 // Destructor
 Transform::~Transform()

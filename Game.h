@@ -38,6 +38,10 @@ private:
 
 	// Entities
 	std::vector<Entity*> entities = std::vector<Entity*>();
+	//bullets
+	std::vector<Entity*> bulletList = std::vector<Entity*>();
+	Mesh* bulletMesh;
+	Material* bulletMaterial;
 
 	// User input and entity swapping
 	int currentEntity;

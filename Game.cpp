@@ -247,7 +247,9 @@ void Game::CreateBasicGeometry()
 
 	terrainEntity = new Entity(terrainMesh, nullptr);
 
-
+	//bullet creation
+	bulletMesh = new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device);
+	bulletMaterial = new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get());
 }
 
 
@@ -273,6 +275,14 @@ void Game::Update(float deltaTime, float totalTime)
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
+
+	//--- Shooting Code ---
+	if (GetAsyncKeyState(VK_LBUTTON)) {
+		bulletList.push_back(new Entity(bulletMesh, bulletMaterial, camera->GetTransform()->GetPosition()));
+	}
+	for (Entity* bullet : bulletList) {
+		bullet->GetTransform()->MoveRelative(0, 0, .001f);
+	}
 
 
 	// ************************************************************************
@@ -302,6 +312,11 @@ void Game::Update(float deltaTime, float totalTime)
 	// ************************************************************************
 
 	for(Entity* ent : entities)
+	{
+		ent->GetTransform()->CreateWorldMatrix();
+	}
+
+	for (Entity* ent : bulletList)
 	{
 		ent->GetTransform()->CreateWorldMatrix();
 	}
@@ -411,6 +426,31 @@ void Game::Draw(float deltaTime, float totalTime)
 		//	ent->GetMesh()->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
 		//	0,     // Offset to the first index we want to use
 		//	0);    // Offset to add to each index when looking up vertices
+	}
+
+	//loop through bullets and draw them
+	for (Entity* ent : bulletList)
+	{
+		currentPS = ent->GetMaterial()->GetPixelShader();
+		currentVS = ent->GetMaterial()->GetVertexShader();
+
+		// Activate the current material's shaders
+		currentVS->SetShader();
+		currentPS->SetShader();
+
+		currentPS->SetFloat("specInt", ent->GetMaterial()->GetSpecularIntensity());
+		currentPS->CopyAllBufferData();
+
+		currentPS->SetShaderResourceView("diffuseTexture", ent->GetMaterial()->GetSRV().Get());
+		// check for normal map
+		if (ent->GetMaterial()->GetNormalMap().Get() != nullptr)
+		{
+			currentPS->SetShaderResourceView("normalMap", ent->GetMaterial()->GetNormalMap().Get());
+		}
+		currentPS->SetSamplerState("samplerOptions", ent->GetMaterial()->GetSamplerState().Get());
+
+
+		ent->Draw(context, currentVS, currentPS, camera);
 	}
 
 	// Terrain Drawing
