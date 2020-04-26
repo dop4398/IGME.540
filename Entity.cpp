@@ -6,11 +6,12 @@ Entity::Entity(Mesh* mesh, Material* material)
 	this->material = material;
 }
 
-Entity::Entity(Mesh* mesh, Material* material, DirectX::XMFLOAT3 _position)
+Entity::Entity(Mesh* mesh, Material* material, DirectX::XMFLOAT3 _position, DirectX::XMFLOAT3 _rotation)
 {
 	this->mesh = mesh;
 	this->material = material;
 	this->transform = Transform(_position);
+	this->transform.SetRotation(_rotation.x, _rotation.y, _rotation.z);
 }
 
 Entity::~Entity()

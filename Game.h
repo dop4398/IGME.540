@@ -46,6 +46,7 @@ private:
 	// User input and entity swapping
 	int currentEntity;
 	bool prevTab;
+	bool prevLButton;
 
 	Camera* camera;
 	

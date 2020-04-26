@@ -139,6 +139,8 @@ void Game::Init()
 	pLight1.diffuseColor = XMFLOAT3(0, 0, 1);
 	pLight1.position = XMFLOAT3(-10, 0, 0);
 	pLights.push_back(pLight1);
+
+	prevLButton = false;
 }
 
 // --------------------------------------------------------
@@ -277,9 +279,14 @@ void Game::Update(float deltaTime, float totalTime)
 		Quit();
 
 	//--- Shooting Code ---
-	if (GetAsyncKeyState(VK_LBUTTON)) {
-		bulletList.push_back(new Entity(bulletMesh, bulletMaterial, camera->GetTransform()->GetPosition()));
+	if (GetAsyncKeyState(VK_LBUTTON) && !prevLButton) {
+		bulletList.push_back(new Entity(bulletMesh, bulletMaterial, camera->GetTransform()->GetPosition(), camera->GetTransform()->GetRotation()));
+		prevLButton = true;
 	}
+	if (!GetAsyncKeyState(VK_LBUTTON)) {
+		prevLButton = false;
+	}
+
 	for (Entity* bullet : bulletList) {
 		bullet->GetTransform()->MoveRelative(0, 0, .001f);
 	}
