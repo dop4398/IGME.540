@@ -1,4 +1,4 @@
-//#include "ShaderIncludes.hlsli"
+#include "ShaderIncludes.hlsli"
 
 
 cbuffer externalData : register(b0)
@@ -10,10 +10,10 @@ cbuffer externalData : register(b0)
 	float lightIntensity;
 
 	float3 pointLightPos;
-	float pointLightRange; 
+	float pointLightRange;
 	float3 pointLightColor;
 	float pointLightIntensity;
-	
+
 
 	float3 cameraPosition;
 
@@ -39,20 +39,17 @@ SamplerState samplerOptions : register(s0);
 
 
 // Struct representing the data we expect to receive from earlier pipeline stages
-struct VertexToPixel
-{
-	float4 position		: SV_POSITION;	// XYZW position (System Value Position)
-	float4 color		: COLOR;        // RGBA color
-
-	float3 normal		: NORMAL;
-	float2 uv			: TEXCOORD;
-
-	float3 tangent		: TANGENT;
-
-	float3 worldPos		: POSITION;
-
-
-};
+//struct VertexToPixel
+//{
+//	float4 position		: SV_POSITION;	// XYZW position (System Value Position)
+//	float4 color		: COLOR;        // RGBA color
+//	float2 uv			: TEXCOORD;
+//	float3 normal		: NORMAL;
+//	float3 tangent		: TANGENT;
+//	float3 worldPos		: POSITION;
+//
+//
+//};
 
 // Range-based attenuation function
 float Attenuate(float3 lightPos, float lightRange, float3 worldPos)
@@ -70,7 +67,7 @@ float Attenuate(float3 lightPos, float lightRange, float3 worldPos)
 // surface normal and a direction FROM the light
 // Note: This function will "reverse" the light direction
 //       so we're comparing the direction back TO the light
-float Diffuse2(float3 normal, float3 lightDir)
+float Diffuse(float3 normal, float3 lightDir)
 {
 	// Ensure the light direction is normalized!
 	// Note: It would be optimal to do this once and pass in an
@@ -83,7 +80,7 @@ float Diffuse2(float3 normal, float3 lightDir)
 // model, given a surface normal, a direction FROM the light,
 // a direction TO the camera (from the surface) and a specular 
 // exponent value (the shininess of the surface)
-float SpecularPhong2(float3 normal, float3 lightDir, float3 toCamera, float specExp)
+float SpecularPhong(float3 normal, float3 lightDir, float3 toCamera, float specExp)
 {
 	// Calculate light reflection vector
 	float3 refl = reflect(normalize(lightDir), normal);
@@ -106,7 +103,7 @@ float SpecularPhong2(float3 normal, float3 lightDir, float3 toCamera, float spec
 //    "put the output of this into the current render target"
 // - Named "main" because that's the default the shader compiler looks for
 // --------------------------------------------------------
-float4 main(VertexToPixel input) : SV_TARGET
+float4 main(VertexToPixelNormalMap input) : SV_TARGET
 {
 	// Re-normalize interpolated normals!
 	input.normal = normalize(input.normal);
@@ -129,12 +126,15 @@ float4 main(VertexToPixel input) : SV_TARGET
 		color0 * blend.r +
 		color1 * blend.g +
 		color2 * blend.b;
+	
 
 	float3 normalFromMap =
 		normalize(
 			normalFromMap0 * blend.r +
 			normalFromMap1 * blend.g +
 			normalFromMap2 * blend.b);
+
+	
 
 	// Create the three vectors for normal mapping
 	float3 N = input.normal;
@@ -151,10 +151,10 @@ float4 main(VertexToPixel input) : SV_TARGET
 	// DIRECTIONAL LIGHT ---------------------------
 
 	// Perform the diffuse light calculation
-	float diffuse = Diffuse2(input.normal, lightDirection);
+	float diffuse = Diffuse(input.normal, lightDirection);
 
 	// Perform the specular calculation
-	float spec = SpecularPhong2(input.normal, lightDirection, toCamera, 64.0f) * specularAdjust;
+	float spec = SpecularPhong(input.normal, lightDirection, toCamera, 64.0f) * specularAdjust;
 
 	// Cut the specular if the diffuse contribution is zero
 	// - The any() function returns 1 if any component of the parameter is non-zero
@@ -178,8 +178,8 @@ float4 main(VertexToPixel input) : SV_TARGET
 
 	// POINT LIGHT ------------------------------------
 	float3 pointLightDirection = normalize(input.worldPos - pointLightPos);
-	float pl_diffuse = Diffuse2(input.normal, pointLightDirection);
-	float pl_spec = SpecularPhong2(input.normal, pointLightDirection, toCamera, 64.0f) * specularAdjust;
+	float pl_diffuse = Diffuse(input.normal, pointLightDirection);
+	float pl_spec = SpecularPhong(input.normal, pointLightDirection, toCamera, 64.0f) * specularAdjust;
 
 	// Cut the specular if the diffuse contribution is zero
 	// - The any() function returns 1 if any component of the parameter is non-zero

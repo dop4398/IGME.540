@@ -56,8 +56,8 @@ private:
 	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
 
 	// Shaders and shader-related constructs
-	SimplePixelShader* pixelShader;
-	SimpleVertexShader* vertexShader;
+	/*SimplePixelShader* pixelShader;
+	SimpleVertexShader* vertexShader;*/
 
 	SimplePixelShader* pixelShaderNormalMap;
 	SimpleVertexShader* vertexShaderNormalMap;
