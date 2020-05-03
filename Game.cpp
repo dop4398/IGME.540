@@ -288,7 +288,7 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	for (Entity* bullet : bulletList) {
-		bullet->GetTransform()->MoveRelative(0, 0, .001f);
+		bullet->GetTransform()->MoveRelative(0, 0, .006f);
 	}
 
 
