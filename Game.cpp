@@ -64,6 +64,10 @@ Game::~Game()
 		delete entities[i];
 	}
 
+	for (int i = 0; i < bulletList.size(); i++) {
+		delete bulletList[i];
+	}
+
 	/*delete vertexShader;
 	delete pixelShader;*/
 	delete vertexShaderNormalMap;
@@ -302,6 +306,35 @@ void Game::Update(float deltaTime, float totalTime)
 		bullet->GetTransform()->MoveRelative(0, 0, 25.0f * deltaTime);
 		bullet->GetTransform()->MoveAbsolute(0, deltaTime * GRAVITY, 0);
 	}
+
+	//delete bullets that travel too far away
+	std::vector<Entity*> deleteList = std::vector<Entity*>();
+	auto it = bulletList.begin();
+	while (it != bulletList.end()) {
+		float distance = sqrt(pow((*it)->GetTransform()->GetPosition().x - camera->GetTransform()->GetPosition().x, 2) +
+			pow((*it)->GetTransform()->GetPosition().y - camera->GetTransform()->GetPosition().y, 2) +
+			pow((*it)->GetTransform()->GetPosition().z - camera->GetTransform()->GetPosition().z, 2));
+		if (distance > 40) {
+			it = bulletList.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+	//delete bullets that are too far away
+	/*for (Entity* toDelete : deleteList) {
+		bool deleteEnt = false;
+		int deletePos = 0;
+		for (int i = 0; i < bulletList.size(); i++) {
+			if (toDelete == bulletList[i]) {
+				deleteEnt = bulletList[i];
+				deletePos = i;
+			}
+		}
+		if (deleteEnt) {
+			delete bulletList[deletePos];
+		}
+	}*/
 
 
 	// ************************************************************************
