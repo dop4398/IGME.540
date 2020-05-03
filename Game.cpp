@@ -2,6 +2,7 @@
 #include "Vertex.h"
 #include <fstream>
 #include "WICTextureLoader.h"
+#include <iostream>
 
 // Needed for a helper function to read compiled shader files from the hard drive
 #pragma comment(lib, "d3dcompiler.lib")
@@ -22,7 +23,7 @@ Game::Game(HINSTANCE hInstance)
 	: DXCore(
 		hInstance,		   // The application's handle
 		"DirectX Game",	   // Text for the window's title bar
-		1280,			   // Width of the window's client area
+		720,			   // Width of the window's client area
 		720,			   // Height of the window's client area
 		true)			   // Show extra stats (fps) in title bar?
 {
@@ -30,8 +31,8 @@ Game::Game(HINSTANCE hInstance)
 	camera = 0;
 	currentEntity = 0;
 	prevTab = false;
-	pixelShader = 0;
-	vertexShader = 0;
+	/*pixelShader = 0;
+	vertexShader = 0;*/
 	pixelShaderNormalMap = 0;
 	vertexShaderNormalMap = 0;
 	currentPS = 0;
@@ -63,8 +64,8 @@ Game::~Game()
 		delete entities[i];
 	}
 
-	delete vertexShader;
-	delete pixelShader;
+	/*delete vertexShader;
+	delete pixelShader;*/
 	delete vertexShaderNormalMap;
 	delete pixelShaderNormalMap;
 	/*delete currentPS;
@@ -94,7 +95,7 @@ void Game::Init()
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Get the size as the next multiple of 16
-	unsigned int size = vertexShader->GetBufferSize(0);
+	unsigned int size = vertexShaderNormalMap->GetBufferSize(0);
 	size = (size + 15) / 16 * 16;
 
 	// Describe the constant buffer
@@ -109,7 +110,7 @@ void Game::Init()
 	camera = new Camera(0.0f, 3.0f, -10.0f, (float)(this->width / this->height), 2.0f);
 
 	// Add Terrain Relevent Textures
-	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/valley_splat.png").c_str(), 0, &terrainBlendMapSRV);
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/terrain_splat.png").c_str(), 0, &terrainBlendMapSRV);
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/snow.jpg").c_str(), 0, &terrainTexture0SRV);
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/grass3.png").c_str(), 0, &terrainTexture1SRV);
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/mountain3.png").c_str(), 0, &terrainTexture2SRV);
@@ -153,10 +154,10 @@ void Game::Init()
 // --------------------------------------------------------
 void Game::LoadShaders()
 {
-	vertexShader = new SimpleVertexShader(device.Get(), context.Get(),
+	/*vertexShader = new SimpleVertexShader(device.Get(), context.Get(),
 		GetFullPathTo_Wide(L"VertexShader.cso").c_str());
 	pixelShader = new SimplePixelShader(device.Get(), context.Get(),
-		GetFullPathTo_Wide(L"PixelShader.cso").c_str());
+		GetFullPathTo_Wide(L"PixelShader.cso").c_str());*/
 
 	vertexShaderNormalMap = new SimpleVertexShader(device.Get(), context.Get(),
 		GetFullPathTo_Wide(L"NormalMapVS.cso").c_str());
@@ -237,9 +238,19 @@ void Game::CreateBasicGeometry()
 
 
 	// Terrain Creation
-	terrainMesh = new TerrainMesh(
+	/*terrainMesh = new TerrainMesh(
 		device,
 		GetFullPathTo("../../Assets/Textures/valley.raw16").c_str(),
+		513,
+		513,
+		BitDepth_16,
+		5.0f,
+		0.05f,
+		1.0f);*/
+
+	terrainMesh = new TerrainMesh(
+		device,
+		GetFullPathTo("../../Assets/Textures/terrain_height.r16").c_str(),
 		513,
 		513,
 		BitDepth_16,
@@ -279,16 +290,17 @@ void Game::Update(float deltaTime, float totalTime)
 		Quit();
 
 	//--- Shooting Code ---
-	if (GetAsyncKeyState(VK_LBUTTON) && !prevLButton) {
+	if (GetAsyncKeyState(VK_RBUTTON) && !prevLButton) {
 		bulletList.push_back(new Entity(bulletMesh, bulletMaterial, camera->GetTransform()->GetPosition(), camera->GetTransform()->GetRotation()));
 		prevLButton = true;
 	}
-	if (!GetAsyncKeyState(VK_LBUTTON)) {
+	if (!GetAsyncKeyState(VK_RBUTTON)) {
 		prevLButton = false;
 	}
 
 	for (Entity* bullet : bulletList) {
-		bullet->GetTransform()->MoveRelative(0, 0, .006f);
+		bullet->GetTransform()->MoveRelative(0, 0, 25.0f * deltaTime);
+		bullet->GetTransform()->MoveAbsolute(0, deltaTime * GRAVITY, 0);
 	}
 
 
@@ -462,7 +474,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	// Terrain Drawing
 	//{
-		vertexShader->SetShader();
+		vertexShaderNormalMap->SetShader();
 		terrainPS->SetShader();
 
 		terrainPS->SetFloat("lightIntensity", 1.0f);
@@ -496,7 +508,7 @@ void Game::Draw(float deltaTime, float totalTime)
 		terrainPS->SetShaderResourceView("normalMap2", terrainNormals2SRV.Get());
 		terrainPS->SetSamplerState("samplerOptions", samplerOptions.Get());
 
-		terrainEntity->Draw(context, vertexShader, terrainPS, camera);
+		terrainEntity->Draw(context, vertexShaderNormalMap, terrainPS, camera);
 	//}
 
 

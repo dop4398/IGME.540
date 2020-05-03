@@ -42,6 +42,7 @@ private:
 	std::vector<Entity*> bulletList = std::vector<Entity*>();
 	Mesh* bulletMesh;
 	Material* bulletMaterial;
+	const float GRAVITY = -9.8f;
 
 	// User input and entity swapping
 	int currentEntity;
@@ -56,8 +57,8 @@ private:
 	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
 
 	// Shaders and shader-related constructs
-	SimplePixelShader* pixelShader;
-	SimpleVertexShader* vertexShader;
+	/*SimplePixelShader* pixelShader;
+	SimpleVertexShader* vertexShader;*/
 
 	SimplePixelShader* pixelShaderNormalMap;
 	SimpleVertexShader* vertexShaderNormalMap;
