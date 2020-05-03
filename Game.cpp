@@ -2,6 +2,7 @@
 #include "Vertex.h"
 #include <fstream>
 #include "WICTextureLoader.h"
+#include <iostream>
 
 // Needed for a helper function to read compiled shader files from the hard drive
 #pragma comment(lib, "d3dcompiler.lib")
@@ -22,7 +23,7 @@ Game::Game(HINSTANCE hInstance)
 	: DXCore(
 		hInstance,		   // The application's handle
 		"DirectX Game",	   // Text for the window's title bar
-		1280,			   // Width of the window's client area
+		720,			   // Width of the window's client area
 		720,			   // Height of the window's client area
 		true)			   // Show extra stats (fps) in title bar?
 {
@@ -289,16 +290,17 @@ void Game::Update(float deltaTime, float totalTime)
 		Quit();
 
 	//--- Shooting Code ---
-	if (GetAsyncKeyState(VK_LBUTTON) && !prevLButton) {
+	if (GetAsyncKeyState(VK_RBUTTON) && !prevLButton) {
 		bulletList.push_back(new Entity(bulletMesh, bulletMaterial, camera->GetTransform()->GetPosition(), camera->GetTransform()->GetRotation()));
 		prevLButton = true;
 	}
-	if (!GetAsyncKeyState(VK_LBUTTON)) {
+	if (!GetAsyncKeyState(VK_RBUTTON)) {
 		prevLButton = false;
 	}
 
 	for (Entity* bullet : bulletList) {
-		bullet->GetTransform()->MoveRelative(0, 0, .001f);
+		bullet->GetTransform()->MoveRelative(0, 0, 25.0f * deltaTime);
+		bullet->GetTransform()->MoveAbsolute(0, deltaTime * GRAVITY, 0);
 	}
 
 
