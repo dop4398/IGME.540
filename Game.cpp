@@ -111,7 +111,7 @@ void Game::Init()
 
 	// Create the camera
 	//camera = new Camera(x, y, z, aspectRatio, mouseLookSpeed);
-	camera = new Camera(0.0f, 3.0f, -10.0f, (float)(this->width / this->height), 2.0f);
+	camera = new Camera(0.0f, 5.0f, -15.0f, (float)(this->width / this->height), 2.0f);
 
 	// Add Terrain Relevent Textures
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/terrain_splat.png").c_str(), 0, &terrainBlendMapSRV);
