@@ -303,8 +303,8 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	for (Entity* bullet : bulletList) {
-		bullet->GetTransform()->MoveRelative(0, 0, 25.0f * deltaTime);
-		bullet->GetTransform()->MoveAbsolute(0, deltaTime * GRAVITY, 0);
+		bullet->GetTransform()->MoveRelative(0, 0, 0.15f);
+		//bullet->GetTransform()->MoveAbsolute(0, GRAVITY, 0);
 	}
 
 	//delete bullets that travel too far away
