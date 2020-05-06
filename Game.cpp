@@ -437,8 +437,6 @@ void Game::Update(float deltaTime, float totalTime)
 		Quit();
 
 
-	
-
 	//--- Shooting Code ---
 	if (GetAsyncKeyState(VK_RBUTTON) && !prevLButton) {
 		bulletList.push_back(new Entity(bulletMesh, bulletMaterial, camera->GetTransform()->GetPosition(), camera->GetTransform()->GetRotation()));

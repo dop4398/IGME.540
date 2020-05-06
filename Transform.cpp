@@ -12,7 +12,7 @@ Transform::Transform()
 	scale = { 1, 1, 1 };
 	XMStoreFloat4x4(&world, XMMatrixIdentity());
 
-	verticalForce = 0.001f;
+	verticalForce = 0.02f;
 }
 
 Transform::Transform(DirectX::XMFLOAT3 _position)
@@ -22,7 +22,7 @@ Transform::Transform(DirectX::XMFLOAT3 _position)
 	scale = { 1, 1, 1 };
 	XMStoreFloat4x4(&world, XMMatrixIdentity());
 
-	verticalForce = 0.001f;
+	verticalForce = 0.02f;
 }
 
 
