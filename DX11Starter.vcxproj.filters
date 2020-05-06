@@ -48,9 +48,6 @@
     <ClCompile Include="TerrainMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Emitter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vertex.h">
@@ -86,9 +83,6 @@
     <ClInclude Include="TerrainMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Emitter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BufferStructs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -109,10 +103,10 @@
     <FxCompile Include="TerrainPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="ParticlePS.hlsl">
+    <FxCompile Include="SkyPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="ParticleVS.hlsl">
+    <FxCompile Include="SkyVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
