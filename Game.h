@@ -129,7 +129,7 @@ private:
 	// Texture related resources
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> diffuseTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalMap;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerOptions;
+	//Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerOptions1;
 
 	// Sprite batch resources
 	std::unique_ptr<DirectX::SpriteBatch> spriteBatch;
