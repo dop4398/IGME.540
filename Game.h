@@ -32,6 +32,18 @@ private:
 	void LoadShaders(); 
 	void CreateBasicGeometry();
 
+	// Helper for creating a cubemap from 6 individual textures
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> CreateCubemap(
+		const wchar_t* right,
+		const wchar_t* left,
+		const wchar_t* up,
+		const wchar_t* down,
+		const wchar_t* front,
+		const wchar_t* back);
+
+	// Private render methods
+	void RenderSky();
+
 	// Matrices
 	DirectX::XMFLOAT4X4 worldMatrix;
 
@@ -80,7 +92,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalMap2;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerOptions;
 
-
 	// Terrain additions
 	Entity* terrainEntity;
 	Mesh* terrainMesh;
@@ -88,7 +99,6 @@ private:
 
 	// Terrain vertices
 	std::vector<Vertex> vertices;
-
 
 	// Blend (or "splat") map
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainBlendMapSRV;
@@ -102,5 +112,13 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainNormals0SRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainNormals1SRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainNormals2SRV;
+
+	// Sky resources
+	Mesh* skyMesh;
+	SimpleVertexShader* skyVS;
+	SimplePixelShader* skyPS;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> skySRV;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> skyRasterState;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> skyDepthState;
 };
 
