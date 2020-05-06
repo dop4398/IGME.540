@@ -51,15 +51,16 @@ void Camera::Update(float dt, HWND windowHandle, std::vector<Vertex> terrainVert
 
 		
 
-		transform.MoveAbsolute(0, distanceY, distanceZ);
-		transform.SetPosition(transform.GetPosition().x, transform.GetPosition().y + .25, transform.GetPosition().z);
+		transform.MoveAbsolute(0, (distanceY + .35) * 5 * dt, distanceZ * 5 * dt);
+		//transform.SetPosition(transform.GetPosition().x, transform.GetPosition().y + .25, transform.GetPosition().z);
 
-		if((float)index + 513 <= terrainVerts.size())
+		if(distanceZ <= 0.1f)
 		{ 
 			index += 513;
 		
 		}
-		else
+
+		if((float)index > terrainVerts.size())
 		{
 			index = 256;
 		}
