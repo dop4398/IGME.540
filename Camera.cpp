@@ -27,7 +27,7 @@ Camera::~Camera()
 void Camera::Update(float dt, HWND windowHandle, std::vector<Vertex> terrainVerts)
 {
 	// Come up with a speed
-	float speed = dt * 1; // Hardcoding "3" as speed!
+	float speed = dt * .1; // Hardcoding "3" as speed!
 
 	// Adjust speed if necessary based on keys...
 
@@ -44,27 +44,26 @@ void Camera::Update(float dt, HWND windowHandle, std::vector<Vertex> terrainVert
 		if (GetAsyncKeyState('X') & 0x8000) { transform.MoveAbsolute(0, -speed, 0); }
 	}
 	else
-	{
-		Vertex newPos;
-		float distanceY = 0;
-		float distanceZ = 0;
-		for (int i = 0; i < terrainVerts.size(); i++)
-		{
-			if ((terrainVerts[i]).Position.x == transform.GetPosition().x || (terrainVerts[i]).Position.z == transform.GetPosition().z)
-			{
-				newPos = terrainVerts[i + 513];
+	{	
 
-				distanceY = sqrt(pow(newPos.Position.y - transform.GetPosition().y, 2));
-				distanceZ = sqrt(pow(newPos.Position.z - transform.GetPosition().z, 2));
+		distanceY = terrainVerts[index].Position.y - transform.GetPosition().y;
+		distanceZ = terrainVerts[index].Position.z - transform.GetPosition().z;
 
+		
 
+		transform.MoveAbsolute(0, distanceY, distanceZ);
+		transform.SetPosition(transform.GetPosition().x, transform.GetPosition().y + .25, transform.GetPosition().z);
 
-			}
-			
+		if((float)index + 513 <= terrainVerts.size())
+		{ 
+			index += 513;
 		
 		}
-
-		transform.MoveAbsolute(0, speed * distanceY, speed * distanceZ);
+		else
+		{
+			index = 256;
+		}
+		
 	}
 
 	// Mouse look...

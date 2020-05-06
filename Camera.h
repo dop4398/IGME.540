@@ -33,5 +33,9 @@ private:
 	float mouseLookSpeed;
 	POINT prevMousePosition;
 	Transform transform;
+	int index = 256;
+	float distanceY = 0;
+	float distanceZ = 0;
+
 };
 
