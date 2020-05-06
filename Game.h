@@ -43,6 +43,7 @@ private:
 	Mesh* bulletMesh;
 	Material* bulletMaterial;
 	const float GRAVITY = -.098f;
+	float collisionRadius = 1;
 
 	// User input and entity swapping
 	int currentEntity;

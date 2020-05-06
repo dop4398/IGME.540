@@ -369,7 +369,7 @@ void Game::Update(float deltaTime, float totalTime)
 	//	entities[0]->GetTransform()->MoveAbsolute(0.0002f, 0.0f, 0.0f);
 
 	// If distance apart is less than or equal to the sum of the radii, then collision
-	if (sqrt(
+	/*if (sqrt(
 		pow(entities[0]->GetTransform()->GetPosition().x - entities[1]->GetTransform()->GetPosition().x, 2) +
 		pow(entities[0]->GetTransform()->GetPosition().y - entities[1]->GetTransform()->GetPosition().y, 2) +
 		pow(entities[0]->GetTransform()->GetPosition().z - entities[1]->GetTransform()->GetPosition().z, 2))
@@ -380,17 +380,47 @@ void Game::Update(float deltaTime, float totalTime)
 	else
 	{
 		entities[0]->GetMaterial()->SetColorTint(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	}
+	}*/
 	// ************************************************************************
 
 	for(Entity* ent : entities)
 	{
+		
 		ent->GetTransform()->CreateWorldMatrix();
 	}
 
-	for (Entity* ent : bulletList)
+	int bulletIndex = -1;
+	int targetIndex = -1;
+
+	//for (Entity* bullet : bulletList)
+	for (int i = 0; i < bulletList.size(); i++)
 	{
-		ent->GetTransform()->CreateWorldMatrix();
+		bulletList[i]->GetTransform()->CreateWorldMatrix();
+
+		// Bullet-target collision detection
+		//for (Entity* target : entities)
+		for (int j = 0; j < entities.size(); j++)
+		{
+			if (sqrt(
+				pow(entities[j]->GetTransform()->GetPosition().x - bulletList[i]->GetTransform()->GetPosition().x, 2) +
+				pow(entities[j]->GetTransform()->GetPosition().y - bulletList[i]->GetTransform()->GetPosition().y, 2) +
+				pow(entities[j]->GetTransform()->GetPosition().z - bulletList[i]->GetTransform()->GetPosition().z, 2))
+				<= collisionRadius)
+			{
+				// Collision detected!
+				// target that needs to be removed
+				targetIndex = j;
+				// bullet that needs to be removed
+				bulletIndex = i;
+			}
+		}
+
+		if (targetIndex != -1 && bulletIndex != -1)
+		{
+			// Remove the target and bullet that collided
+			entities.erase(entities.begin() + targetIndex);
+			bulletList.erase(bulletList.begin() + bulletIndex);
+		}
 	}
 
 	// Update the camera
@@ -429,19 +459,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//context->IASetInputLayout(inputLayout.Get()); // Removed due to SimpleShader implementation
 
 	
-	//==========================================================================
-	// Band-aid code below
-	//  Which pixel shader do we use for lights and camera when we have a bunch?
-	//  Currently using the first entity's PS
-	// =========================================================================
-	currentPS = entities[0]->GetMaterial()->GetPixelShader();
-	currentVS = entities[0]->GetMaterial()->GetVertexShader();
-	currentVS->SetShader();
-	currentPS->SetShader();
 
-	currentPS->SetData("dLight1", &dLights[0], sizeof(DirectionalLight));
-	currentPS->SetData("pLight1", &pLights[0], sizeof(PointLight));
-	currentPS->SetFloat3("cameraPosition", camera->GetTransform()->GetPosition());
 
 	// loop through entities
 	for (Entity* ent : entities)
@@ -452,6 +470,16 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Activate the current material's shaders
 		currentVS->SetShader();
 		currentPS->SetShader();
+
+		// Lights
+	//==========================================================================
+	//  Which pixel shader do we use for lights and camera when we have a bunch?
+	//  Currently using the last entity's PS
+		currentPS->SetData("dLight1", &dLights[0], sizeof(DirectionalLight));
+		currentPS->SetData("pLight1", &pLights[0], sizeof(PointLight));
+		currentPS->SetFloat3("cameraPosition", camera->GetTransform()->GetPosition());
+	// =========================================================================
+		
 
 		currentPS->SetFloat("specInt", ent->GetMaterial()->GetSpecularIntensity());
 		currentPS->CopyAllBufferData();
