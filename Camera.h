@@ -2,6 +2,10 @@
 #include <DirectXMath.h>
 #include <Windows.h>
 #include "Transform.h"
+#include <iostream>
+#include <vector>
+#include "Vertex.h"
+
 
 class Camera
 {
@@ -10,7 +14,7 @@ public:
 	~Camera();
 
 	// Updating
-	void Update(float dt, HWND windowHandle);
+	void Update(float dt, HWND windowHandle, std::vector<Vertex> terrainVerts);
 	void UpdateViewMatrix();
 	void UpdateProjectionMatrix(float aspectRatio);
 
@@ -29,5 +33,9 @@ private:
 	float mouseLookSpeed;
 	POINT prevMousePosition;
 	Transform transform;
+	int index = 256;
+	float distanceY = 0;
+	float distanceZ = 0;
+
 };
 
