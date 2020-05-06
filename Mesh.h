@@ -13,6 +13,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 	// int to hold the number of indices in the index buffer
 	int numberOfIndices;
+	int numberOfVertices;
+	
 
 public:
 	Mesh();
@@ -36,5 +38,9 @@ public:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetIndexBuffer();
 	int GetIndexCount();
+
+	std::vector<Vertex> GetVertices();
+	int GetNumberOfVertices();
+	std::vector<Vertex> vertices;
 };
 

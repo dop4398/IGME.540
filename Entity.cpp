@@ -2,7 +2,7 @@
 
 Entity::Entity(Mesh* mesh, Material* material)
 {
-	this->mesh = mesh;
+	this->mesh  = mesh;
 	this->material = material;
 }
 

@@ -29,6 +29,5 @@ private:
 
 	void Load8bitRaw(const char* heightmap, unsigned int width, unsigned int height, float yScale, float xzScale, Vertex* verts);
 	void Load16bitRaw(const char* heightmap, unsigned int width, unsigned int height, float yScale, float xzScale, Vertex* verts);
-
 };
 

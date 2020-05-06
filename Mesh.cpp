@@ -8,7 +8,7 @@ Mesh::Mesh() { }
 
 Mesh::Mesh(Vertex* vertices, int numberOfVertices, unsigned int* indices, int numberOfIndices, Microsoft::WRL::ComPtr<ID3D11Device> device)
 {
-
+	this->numberOfVertices = numberOfVertices;
 	CreateBuffers(vertices, indices, numberOfIndices, numberOfVertices, device);
 
 	//// Set up the indices
@@ -265,6 +265,10 @@ Mesh::Mesh(const char* filename, Microsoft::WRL::ComPtr<ID3D11Device> device)
 	initialIndexData.pSysMem = &indices[0];
 	// Actually create the buffer with the initial data
 	device->CreateBuffer(&ibd, &initialIndexData, indexBuffer.GetAddressOf());
+
+
+	vertices = verts;
+	numberOfVertices = vertCounter;
 }
 
 Mesh::~Mesh()
@@ -363,6 +367,16 @@ Microsoft::WRL::ComPtr<ID3D11Buffer> Mesh::GetIndexBuffer()
 int Mesh::GetIndexCount()
 {
 	return numberOfIndices;
+}
+
+std::vector<Vertex> Mesh::GetVertices()
+{
+	return vertices;
+}
+
+int Mesh::GetNumberOfVertices()
+{
+	return numberOfVertices;
 }
 
 void Mesh::CreateBuffers(Vertex* vertexes, unsigned int* indexes, int indicesNum, int vertexsNum, Microsoft::WRL::ComPtr<ID3D11Device> deviceTwo2)

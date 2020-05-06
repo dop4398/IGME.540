@@ -40,6 +40,7 @@ Game::Game(HINSTANCE hInstance)
 	terrainEntity = 0;
 	terrainMesh = 0;
 	terrainPS = 0;
+	vertices = std::vector<Vertex>();
 
 #if defined(DEBUG) || defined(_DEBUG)
 	// Do we want a console window?  Probably only in debug mode
@@ -227,7 +228,7 @@ void Game::CreateBasicGeometry()
 	// ********************************************************
 	// Entity initialization
 	// ********************************************************
-
+	
 	// sphere entity
 	entities.push_back(new Entity(
 		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
@@ -264,9 +265,38 @@ void Game::CreateBasicGeometry()
 
 	terrainEntity = new Entity(terrainMesh, nullptr);
 
+	// Setup for targets
+	vertices = terrainEntity->GetMesh()->GetVertices();
+
+
 	//bullet creation
 	bulletMesh = new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device);
 	bulletMaterial = new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get());
+
+	
+
+	// Targets
+	int x = 0;
+	int y = 0;
+	int z = 0;
+	for (int i = 0; i < 20; i++)
+	{
+		// Generate the entity
+		entities.push_back(new Entity(
+			new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
+			new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get())
+		));
+
+		// Find a random vertex within set bounts and put a target there
+		do {
+			int index = rand() % (vertices.size() - 1) + 1;
+			x = vertices[index].Position.x;
+			y = vertices[index].Position.y;
+			z = vertices[index].Position.z;
+		} while (x < 100 && x > 0 && z < 100 && z > 0);
+
+			entities[i + 2]->GetTransform()->SetPosition(x, y, z);
+	}
 }
 
 
@@ -339,14 +369,14 @@ void Game::Update(float deltaTime, float totalTime)
 
 	// ************************************************************************
 	// Collision testing
-	if (GetAsyncKeyState(VK_UP)) // UP
-		entities[0]->GetTransform()->MoveAbsolute(0.0f, 0.0002f, 0.0f);
-	if (GetAsyncKeyState(VK_DOWN)) // DOWN
-		entities[0]->GetTransform()->MoveAbsolute(0.0f, -0.0002f, 0.0f);
-	if (GetAsyncKeyState(VK_LEFT)) // LEFT
-		entities[0]->GetTransform()->MoveAbsolute(-0.0002f, 0.0f, 0.0f);
-	if (GetAsyncKeyState(VK_RIGHT)) // RIGHT
-		entities[0]->GetTransform()->MoveAbsolute(0.0002f, 0.0f, 0.0f);
+	//if (GetAsyncKeyState(VK_UP)) // UP
+	//	entities[0]->GetTransform()->MoveAbsolute(0.0f, 0.0002f, 0.0f);
+	//if (GetAsyncKeyState(VK_DOWN)) // DOWN
+	//	entities[0]->GetTransform()->MoveAbsolute(0.0f, -0.0002f, 0.0f);
+	//if (GetAsyncKeyState(VK_LEFT)) // LEFT
+	//	entities[0]->GetTransform()->MoveAbsolute(-0.0002f, 0.0f, 0.0f);
+	//if (GetAsyncKeyState(VK_RIGHT)) // RIGHT
+	//	entities[0]->GetTransform()->MoveAbsolute(0.0002f, 0.0f, 0.0f);
 
 	// If distance apart is less than or equal to the sum of the radii, then collision
 	if (sqrt(

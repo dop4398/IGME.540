@@ -86,6 +86,9 @@ private:
 	Mesh* terrainMesh;
 	SimplePixelShader* terrainPS;
 
+	// Terrain vertices
+	std::vector<Vertex> vertices;
+
 
 	// Blend (or "splat") map
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainBlendMapSRV;
@@ -99,7 +102,5 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainNormals0SRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainNormals1SRV;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> terrainNormals2SRV;
-
-
 };
 

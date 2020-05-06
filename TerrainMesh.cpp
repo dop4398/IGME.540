@@ -26,6 +26,12 @@ TerrainMesh::TerrainMesh(
 	else
 		Load16bitRaw(heightmap, heightmapWidth, heightmapHeight, yScale, xzScale, verts);
 
+	// Set the vertices for later access
+	for (int i = 0; i < numVertices; i++)
+	{
+		this->vertices.push_back(verts[i]);
+	}
+
 	// Create indices and, while we're at it, calculate the normal
 	// of each triangle (as we'll need those for vertex normals)
 	unsigned int* indices = new unsigned int[numIndices];
@@ -164,6 +170,7 @@ TerrainMesh::TerrainMesh(
 
 	// Create the buffers and clean up arrays
 	this->CreateBuffers(verts, indices, numIndices, numVertices, device);
+
 	delete[] verts;
 	delete[] indices;
 }
@@ -171,8 +178,8 @@ TerrainMesh::TerrainMesh(
 
 TerrainMesh::~TerrainMesh()
 {
-
 }
+
 
 void TerrainMesh::Load8bitRaw(const char* heightmap, unsigned int width, unsigned int height, float yScale, float xzScale, Vertex* verts)
 {
