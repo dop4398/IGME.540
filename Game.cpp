@@ -75,8 +75,8 @@ Game::~Game()
 	delete pixelShader;*/
 	delete vertexShaderNormalMap;
 	delete pixelShaderNormalMap;
-	/*delete currentPS;
-	delete currentVS;*/
+	delete currentPS;
+	delete currentVS;
 	delete camera;
 
 	delete terrainPS;
@@ -231,13 +231,13 @@ void Game::CreateBasicGeometry()
 	CreateWICTextureFromFile(
 		device.Get(),
 		context.Get(),	// Passing in the context auto-generates mipmaps!!
-		GetFullPathTo_Wide(L"../../Assets/Textures/rock.png").c_str(),
+		GetFullPathTo_Wide(L"../../Assets/Textures/targetTexture.png").c_str(),
 		nullptr,		// We don't need the texture ref ourselves
 		diffuseTexture1.GetAddressOf()); // We do need an SRV
 	CreateWICTextureFromFile(
 		device.Get(),
 		context.Get(),	// Passing in the context auto-generates mipmaps!!
-		GetFullPathTo_Wide(L"../../Assets/Textures/rock_normals.png").c_str(),
+		GetFullPathTo_Wide(L"../../Assets/Textures/targetNormal.png").c_str(),
 		nullptr,		// We don't need the texture ref ourselves
 		normalMap1.GetAddressOf()); // We do need an SRV
 
