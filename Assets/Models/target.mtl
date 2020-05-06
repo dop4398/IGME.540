@@ -1,16 +1,16 @@
-newmtl lambert2SG
+newmtl target:lambert2SG
 illum 4
 Kd 0.00 0.00 0.00
 Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
 Ni 1.00
-newmtl lambert3SG
+newmtl target:lambert3SG
 illum 4
 Kd 1.00 0.00 0.00
 Ka 0.00 0.00 0.00
 Tf 1.00 1.00 1.00
 Ni 1.00
-newmtl lambert4SG
+newmtl target:lambert4SG
 illum 4
 Kd 1.00 1.00 0.00
 Ka 0.00 0.00 0.00
