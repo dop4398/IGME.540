@@ -9,6 +9,8 @@ class Transform
 	DirectX::XMFLOAT3 scale;
 	DirectX::XMFLOAT4X4 world;
 
+	float verticalForce;
+
 public:
 	Transform();
 	Transform(DirectX::XMFLOAT3 _position);
@@ -29,5 +31,8 @@ public:
 	DirectX::XMFLOAT3 GetRotation();
 	DirectX::XMFLOAT3 GetScale();
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
+
+	float GetVerticalForce();
+	void AddVerticalForce(float force);
 };
 

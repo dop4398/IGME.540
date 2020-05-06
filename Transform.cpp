@@ -11,6 +11,8 @@ Transform::Transform()
 	rotation = { 0, 0, 0 };
 	scale = { 1, 1, 1 };
 	XMStoreFloat4x4(&world, XMMatrixIdentity());
+
+	verticalForce = 0.001f;
 }
 
 Transform::Transform(DirectX::XMFLOAT3 _position)
@@ -19,6 +21,8 @@ Transform::Transform(DirectX::XMFLOAT3 _position)
 	rotation = { 0, 0, 0 };
 	scale = { 1, 1, 1 };
 	XMStoreFloat4x4(&world, XMMatrixIdentity());
+
+	verticalForce = 0.001f;
 }
 
 
@@ -130,4 +134,14 @@ DirectX::XMFLOAT3 Transform::GetScale()
 DirectX::XMFLOAT4X4 Transform::GetWorldMatrix()
 {
 	return world;
+}
+
+float Transform::GetVerticalForce()
+{
+	return verticalForce;
+}
+
+void Transform::AddVerticalForce(float force)
+{
+	verticalForce += force;
 }

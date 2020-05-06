@@ -285,7 +285,7 @@ void Game::CreateBasicGeometry()
 			z = vertices[index].Position.z;
 		} while (!(x > -1000 && x < 1000 && z > -1000 && z < 1000));
 
-			entities[i]->GetTransform()->SetPosition(x, y+0.1f, z);
+			entities[i]->GetTransform()->SetPosition(x, y+0.2f, z);
 	}
 }
 
@@ -319,6 +319,7 @@ void Game::Update(float deltaTime, float totalTime)
 	//--- Shooting Code ---
 	if (GetAsyncKeyState(VK_RBUTTON) && !prevLButton) {
 		bulletList.push_back(new Entity(bulletMesh, bulletMaterial, camera->GetTransform()->GetPosition(), camera->GetTransform()->GetRotation()));
+		bulletList[bulletList.size() - 1]->GetTransform()->SetScale(0.1f, 0.1f, 0.1f);
 		prevLButton = true;
 	}
 	if (!GetAsyncKeyState(VK_RBUTTON)) {
@@ -326,8 +327,9 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	for (Entity* bullet : bulletList) {
-		bullet->GetTransform()->MoveRelative(0, 0, 0.15f);
-		//bullet->GetTransform()->MoveAbsolute(0, GRAVITY, 0);
+		bullet->GetTransform()->MoveRelative(0, 0, 0.015f);
+		bullet->GetTransform()->AddVerticalForce(GRAVITY);
+		bullet->GetTransform()->MoveAbsolute(0, bullet->GetTransform()->GetVerticalForce(), 0);
 	}
 
 	//delete bullets that travel too far away
@@ -359,41 +361,14 @@ void Game::Update(float deltaTime, float totalTime)
 		}
 	}*/
 
-
-	// ************************************************************************
-	// Collision testing
-	//if (GetAsyncKeyState(VK_UP)) // UP
-	//	entities[0]->GetTransform()->MoveAbsolute(0.0f, 0.0002f, 0.0f);
-	//if (GetAsyncKeyState(VK_DOWN)) // DOWN
-	//	entities[0]->GetTransform()->MoveAbsolute(0.0f, -0.0002f, 0.0f);
-	//if (GetAsyncKeyState(VK_LEFT)) // LEFT
-	//	entities[0]->GetTransform()->MoveAbsolute(-0.0002f, 0.0f, 0.0f);
-	//if (GetAsyncKeyState(VK_RIGHT)) // RIGHT
-	//	entities[0]->GetTransform()->MoveAbsolute(0.0002f, 0.0f, 0.0f);
-
-	// If distance apart is less than or equal to the sum of the radii, then collision
-	/*if (sqrt(
-		pow(entities[0]->GetTransform()->GetPosition().x - entities[1]->GetTransform()->GetPosition().x, 2) +
-		pow(entities[0]->GetTransform()->GetPosition().y - entities[1]->GetTransform()->GetPosition().y, 2) +
-		pow(entities[0]->GetTransform()->GetPosition().z - entities[1]->GetTransform()->GetPosition().z, 2))
-		<= 1)
-	{
-		entities[0]->GetMaterial()->SetColorTint(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f));
-	}
-	else
-	{
-		entities[0]->GetMaterial()->SetColorTint(XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	}*/
-	// ************************************************************************
-
 	for(Entity* ent : entities)
 	{
-		
 		ent->GetTransform()->CreateWorldMatrix();
 	}
 
 	int bulletIndex = -1;
 	int targetIndex = -1;
+	collisionRadius = 1;
 
 	//for (Entity* bullet : bulletList)
 	for (int i = 0; i < bulletList.size(); i++)
