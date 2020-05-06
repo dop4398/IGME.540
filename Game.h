@@ -10,6 +10,11 @@
 #include "Lights.h"
 #include <vector>
 #include "TerrainMesh.h"
+#include "SpriteBatch.h"
+#include "SpriteFont.h"
+#include "WICTextureLoader.h"
+#include "DDSTextureLoader.h"
+#include <memory>
 
 class Game 
 	: public DXCore
@@ -120,5 +125,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> skySRV;
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> skyRasterState;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> skyDepthState;
+
+	// Sprite batch resources
+	std::unique_ptr<DirectX::SpriteBatch> spriteBatch;
+	std::unique_ptr<DirectX::SpriteFont> spriteFont;
 };
 
