@@ -457,7 +457,8 @@ void Game::Update(float deltaTime, float totalTime)
 	std::vector<Entity*> deleteList = std::vector<Entity*>();
 	auto it = bulletList.begin();
 	while (it != bulletList.end()) {
-		float distance = sqrt(pow((*it)->GetTransform()->GetPosition().x - camera->GetTransform()->GetPosition().x, 2) +
+		float distance = sqrt(
+			pow((*it)->GetTransform()->GetPosition().x - camera->GetTransform()->GetPosition().x, 2) +
 			pow((*it)->GetTransform()->GetPosition().y - camera->GetTransform()->GetPosition().y, 2) +
 			pow((*it)->GetTransform()->GetPosition().z - camera->GetTransform()->GetPosition().z, 2));
 		if (distance > 40) {
@@ -513,13 +514,18 @@ void Game::Update(float deltaTime, float totalTime)
 				bulletIndex = i;
 			}
 		}
+	}
 
-		if (targetIndex != -1 && bulletIndex != -1)
-		{
-			// Remove the target and bullet that collided
-			entities.erase(entities.begin() + targetIndex);
-			bulletList.erase(bulletList.begin() + bulletIndex);
-		}
+	if (targetIndex != -1 && bulletIndex != -1)
+	{
+		// Remove the target and bullet that collided
+		entities.erase(entities.begin() + targetIndex);
+		bulletList.erase(bulletList.begin() + bulletIndex);
+	}
+
+	if (entities.size() == 0)
+	{
+		Quit();
 	}
 
 	// Update the camera
