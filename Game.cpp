@@ -228,19 +228,6 @@ void Game::CreateBasicGeometry()
 	// ********************************************************
 	// Entity initialization
 	// ********************************************************
-	
-	// sphere entity
-	entities.push_back(new Entity(
-		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
-		new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get())
-	));
-
-	// other sphere entity
-	entities.push_back(new Entity(
-		new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
-		new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get())
-	));
-
 
 	// Terrain Creation
 	/*terrainMesh = new TerrainMesh(
@@ -265,21 +252,24 @@ void Game::CreateBasicGeometry()
 
 	terrainEntity = new Entity(terrainMesh, nullptr);
 
-	// Setup for targets
-	vertices = terrainEntity->GetMesh()->GetVertices();
-
 
 	//bullet creation
 	bulletMesh = new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device);
 	bulletMaterial = new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get());
 
 	
+	// Target creation
+	vertices = terrainEntity->GetMesh()->GetVertices();
+	float x = 0;
+	float y = 0;
+	float z = 0;
+	float xUpperBound = 1000;
+	float xLowerBound = -1000;
+	float zUpperBound = 1000;
+	float zLowerBound = -1000;
+	int numberOfTargets = 10;
 
-	// Targets
-	int x = 0;
-	int y = 0;
-	int z = 0;
-	for (int i = 0; i < 20; i++)
+	for (int i = 0; i < numberOfTargets; i++)
 	{
 		// Generate the entity
 		entities.push_back(new Entity(
@@ -289,13 +279,13 @@ void Game::CreateBasicGeometry()
 
 		// Find a random vertex within set bounts and put a target there
 		do {
-			int index = rand() % (vertices.size() - 1) + 1;
+			int index = ((double)rand() / (RAND_MAX)) * vertices.size();
 			x = vertices[index].Position.x;
 			y = vertices[index].Position.y;
 			z = vertices[index].Position.z;
-		} while (x < 100 && x > 0 && z < 100 && z > 0);
+		} while (!(x > -1000 && x < 1000 && z > -1000 && z < 1000));
 
-			entities[i + 2]->GetTransform()->SetPosition(x, y, z);
+			entities[i]->GetTransform()->SetPosition(x, y+0.1f, z);
 	}
 }
 
