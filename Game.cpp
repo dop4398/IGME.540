@@ -117,7 +117,7 @@ void Game::Init()
 
 	// Create the camera
 	//camera = new Camera(x, y, z, aspectRatio, mouseLookSpeed);
-	camera = new Camera(vertices[256].Position.x, vertices[256].Position.y + 5, vertices[256].Position.z, (float)(this->width / this->height), 1.0f);
+	camera = new Camera(vertices[256].Position.x, vertices[256].Position.y + 5, vertices[256].Position.z, (float)(this->width / this->height), 0.5f);
 
 	// Add Terrain Relevent Textures
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/terrain_splat.png").c_str(), 0, &terrainBlendMapSRV);
@@ -446,8 +446,8 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	for (Entity* bullet : bulletList) {
-		bullet->GetTransform()->MoveRelative(0, 0, 0.015f);
-		bullet->GetTransform()->AddVerticalForce(GRAVITY);
+		bullet->GetTransform()->MoveRelative(0, 0, 0.1f);
+		bullet->GetTransform()->AddVerticalForce(GRAVITY * 100);
 		bullet->GetTransform()->MoveAbsolute(0, bullet->GetTransform()->GetVerticalForce(), 0);
 	}
 
