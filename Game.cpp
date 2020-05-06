@@ -176,6 +176,9 @@ void Game::Init()
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	device->CreateDepthStencilState(&dsDesc, skyDepthState.GetAddressOf());
 
+	// Sprite batch setup (and sprite font loading)
+	spriteBatch = std::make_unique<SpriteBatch>(context.Get());
+	spriteFont = std::make_unique<SpriteFont>(device.Get(), GetFullPathTo_Wide(L"../../Assets/Fonts/Arial.spritefont").c_str());
 
 	prevLButton = false;
 }
@@ -688,10 +691,11 @@ void Game::Draw(float deltaTime, float totalTime)
 	vertexShaderNormalMap->SetShader();
 	terrainPS->SetShader();
 
+	/*
 	terrainPS->SetFloat("lightIntensity", 1.0f);
 	terrainPS->SetFloat3("lightColor", XMFLOAT3(0.8f, 0.8f, 0.8f));
 	terrainPS->SetFloat3("lightDirection", XMFLOAT3(1, -1, 1));
-
+	*/
 	/*terrainPS->SetFloat("pointLightIntensity", 1.0f);
 	terrainPS->SetFloat("pointLightRange", 10.0f);
 	terrainPS->SetFloat3("pointLightColor", XMFLOAT3(1, 1, 1));
@@ -732,4 +736,54 @@ void Game::Draw(float deltaTime, float totalTime)
 	// Due to the usage of a more sophisticated swap chain,
 	// the render target must be re-bound after every call to Present()
 	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), depthStencilView.Get());
+
+	// === SpriteBatch =====================================
+	// See these links for more info!
+	// SpriteBatch: https://github.com/microsoft/DirectXTK/wiki/SpriteBatch
+	// SpriteFont: https://github.com/microsoft/DirectXTK/wiki/SpriteFont
+	{
+		// Make a rectangle for each of the output images
+		RECT fontSheetRect = { 230, 10, 320, 110 };
+
+		// Grab the SRV of the font from the SpriteFont
+		// Note: It's not great to do this every frame, but 
+		// this is just a demo to show what it looks like!
+		ID3D11ShaderResourceView* fontSheet;
+		spriteFont->GetSpriteSheet(&fontSheet);
+
+		// Begin the batch, draw lots of stuff, then end it
+		spriteBatch->Begin();
+
+		// Draw a few 2D textures around the screen
+		spriteBatch->Draw(fontSheet, fontSheetRect);
+
+		// Draw some arbitrary text
+		spriteFont->DrawString(
+			spriteBatch.get(),
+			L"This is some cool text, yo",
+			XMFLOAT2(10, 10));
+
+		// Draw the mouse position
+		POINT mousePos = {};
+		GetCursorPos(&mousePos);
+		ScreenToClient(hWnd, &mousePos);
+		std::wstring dynamicText = L"Mouse Pos: " + std::to_wstring(mousePos.x) + L"," + std::to_wstring(mousePos.y);
+		spriteFont->DrawString(
+			spriteBatch.get(),
+			dynamicText.c_str(),
+			XMFLOAT2(10, 150));
+
+		// Done with the batch
+		spriteBatch->End();
+
+		// Release the extra reference to the font sheet we made above
+		// when we called GetSpriteSheet()
+		fontSheet->Release();
+
+		// Reset any states that may be changed by sprite batch!
+		context->OMSetBlendState(0, 0, 0xFFFFFFFF);
+		context->RSSetState(0);
+		context->OMSetDepthStencilState(0, 0);
+	}
+	// ======================================================
 }
