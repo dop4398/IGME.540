@@ -11,7 +11,6 @@
 #include <vector>
 #include "TerrainMesh.h"
 
-
 class Game 
 	: public DXCore
 {

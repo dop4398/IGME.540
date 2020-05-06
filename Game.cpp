@@ -123,6 +123,7 @@ void Game::Init()
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/grass3_normals.png").c_str(), 0, &terrainNormals1SRV);
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/mountain3_normals.png").c_str(), 0, &terrainNormals2SRV);
 
+
 	// Initialize lights
 	DirectionalLight light1;
 	light1.ambientColor = XMFLOAT3(0.1f, 0.1f, 0.1f);
@@ -273,7 +274,7 @@ void Game::CreateBasicGeometry()
 	{
 		// Generate the entity
 		entities.push_back(new Entity(
-			new Mesh(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device),
+			new Mesh(GetFullPathTo("../../Assets/Models/target.obj").c_str(), device),
 			new Material(pixelShaderNormalMap, vertexShaderNormalMap, XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f, diffuseTexture1.Get(), normalMap1.Get(), samplerOptions.Get())
 		));
 
@@ -529,43 +530,41 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 
 	// Terrain Drawing
-	//{
-		vertexShaderNormalMap->SetShader();
-		terrainPS->SetShader();
+	vertexShaderNormalMap->SetShader();
+	terrainPS->SetShader();
 
-		terrainPS->SetFloat("lightIntensity", 1.0f);
-		terrainPS->SetFloat3("lightColor", XMFLOAT3(0.8f, 0.8f, 0.8f));
-		terrainPS->SetFloat3("lightDirection", XMFLOAT3(1, -1, 1));
+	terrainPS->SetFloat("lightIntensity", 1.0f);
+	terrainPS->SetFloat3("lightColor", XMFLOAT3(0.8f, 0.8f, 0.8f));
+	terrainPS->SetFloat3("lightDirection", XMFLOAT3(1, -1, 1));
 
-		/*terrainPS->SetFloat("pointLightIntensity", 1.0f);
-		terrainPS->SetFloat("pointLightRange", 10.0f);
-		terrainPS->SetFloat3("pointLightColor", XMFLOAT3(1, 1, 1));
-		terrainPS->SetFloat3("pointLightPos", lightEntity->GetTransform()->GetPosition());*/
+	/*terrainPS->SetFloat("pointLightIntensity", 1.0f);
+	terrainPS->SetFloat("pointLightRange", 10.0f);
+	terrainPS->SetFloat3("pointLightColor", XMFLOAT3(1, 1, 1));
+	terrainPS->SetFloat3("pointLightPos", lightEntity->GetTransform()->GetPosition());*/
 
-		terrainPS->SetFloat3("environmentAmbientColor", XMFLOAT3(0.50f, 0.5f, 0.5f));
+	terrainPS->SetFloat3("environmentAmbientColor", XMFLOAT3(0.50f, 0.5f, 0.5f));
 
-		terrainPS->SetFloat3("cameraPosition", camera->GetTransform()->GetPosition());
+	terrainPS->SetFloat3("cameraPosition", camera->GetTransform()->GetPosition());
 
-		terrainPS->SetFloat("uvScale0", 50.0f);
-		terrainPS->SetFloat("uvScale1", 50.0f);
-		terrainPS->SetFloat("uvScale2", 50.0f);
+	terrainPS->SetFloat("uvScale0", 50.0f);
+	terrainPS->SetFloat("uvScale1", 50.0f);
+	terrainPS->SetFloat("uvScale2", 50.0f);
 
-		terrainPS->SetFloat("specularAdjust", 0.0f);
+	terrainPS->SetFloat("specularAdjust", 0.0f);
 
-		terrainPS->CopyAllBufferData();
+	terrainPS->CopyAllBufferData();
 
-		// Set texture resources for the next draw
-		terrainPS->SetShaderResourceView("blendMap", terrainBlendMapSRV.Get());
-		terrainPS->SetShaderResourceView("texture0", terrainTexture0SRV.Get());
-		terrainPS->SetShaderResourceView("texture1", terrainTexture1SRV.Get());
-		terrainPS->SetShaderResourceView("texture2", terrainTexture2SRV.Get());
-		terrainPS->SetShaderResourceView("normalMap0", terrainNormals0SRV.Get());
-		terrainPS->SetShaderResourceView("normalMap1", terrainNormals1SRV.Get());
-		terrainPS->SetShaderResourceView("normalMap2", terrainNormals2SRV.Get());
-		terrainPS->SetSamplerState("samplerOptions", samplerOptions.Get());
+	// Set texture resources for the next draw
+	terrainPS->SetShaderResourceView("blendMap", terrainBlendMapSRV.Get());
+	terrainPS->SetShaderResourceView("texture0", terrainTexture0SRV.Get());
+	terrainPS->SetShaderResourceView("texture1", terrainTexture1SRV.Get());
+	terrainPS->SetShaderResourceView("texture2", terrainTexture2SRV.Get());
+	terrainPS->SetShaderResourceView("normalMap0", terrainNormals0SRV.Get());
+	terrainPS->SetShaderResourceView("normalMap1", terrainNormals1SRV.Get());
+	terrainPS->SetShaderResourceView("normalMap2", terrainNormals2SRV.Get());
+	terrainPS->SetSamplerState("samplerOptions", samplerOptions.Get());
 
-		terrainEntity->Draw(context, vertexShaderNormalMap, terrainPS, camera);
-	//}
+	terrainEntity->Draw(context, vertexShaderNormalMap, terrainPS, camera);
 
 
 	// Present the back buffer to the user
