@@ -313,6 +313,9 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
+
+	
+
 	//--- Shooting Code ---
 	if (GetAsyncKeyState(VK_RBUTTON) && !prevLButton) {
 		bulletList.push_back(new Entity(bulletMesh, bulletMaterial, camera->GetTransform()->GetPosition(), camera->GetTransform()->GetRotation()));
@@ -424,7 +427,7 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	// Update the camera
-	camera->Update(deltaTime, this->hWnd);
+	camera->Update(deltaTime, this->hWnd, vertices);
 }
 
 // --------------------------------------------------------

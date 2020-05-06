@@ -2,6 +2,10 @@
 #include <DirectXMath.h>
 #include <Windows.h>
 #include "Transform.h"
+#include <iostream>
+#include <vector>
+#include "Vertex.h"
+
 
 class Camera
 {
@@ -10,7 +14,7 @@ public:
 	~Camera();
 
 	// Updating
-	void Update(float dt, HWND windowHandle);
+	void Update(float dt, HWND windowHandle, std::vector<Vertex> terrainVerts);
 	void UpdateViewMatrix();
 	void UpdateProjectionMatrix(float aspectRatio);
 

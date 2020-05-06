@@ -1,5 +1,8 @@
 #include "Camera.h"
 #include <Windows.h>
+#include <iostream>
+#include "Vertex.h"
+#include <vector>
 
 using namespace DirectX;
 
@@ -21,7 +24,7 @@ Camera::~Camera()
 
 
 // Camera's update, which looks for key presses
-void Camera::Update(float dt, HWND windowHandle)
+void Camera::Update(float dt, HWND windowHandle, std::vector<Vertex> terrainVerts)
 {
 	// Come up with a speed
 	float speed = dt * 1; // Hardcoding "3" as speed!
@@ -42,7 +45,26 @@ void Camera::Update(float dt, HWND windowHandle)
 	}
 	else
 	{
-		transform.MoveAbsolute(0, 0, speed);
+		Vertex newPos;
+		float distanceY = 0;
+		float distanceZ = 0;
+		for (int i = 0; i < terrainVerts.size(); i++)
+		{
+			if ((terrainVerts[i]).Position.x == transform.GetPosition().x || (terrainVerts[i]).Position.z == transform.GetPosition().z)
+			{
+				newPos = terrainVerts[i + 513];
+
+				distanceY = sqrt(pow(newPos.Position.y - transform.GetPosition().y, 2));
+				distanceZ = sqrt(pow(newPos.Position.z - transform.GetPosition().z, 2));
+
+
+
+			}
+			
+		
+		}
+
+		transform.MoveAbsolute(0, speed * distanceY, speed * distanceZ);
 	}
 
 	// Mouse look...
