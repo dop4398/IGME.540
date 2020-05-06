@@ -42,7 +42,7 @@ private:
 	std::vector<Entity*> bulletList = std::vector<Entity*>();
 	Mesh* bulletMesh;
 	Material* bulletMaterial;
-	const float GRAVITY = -.098f;
+	const float GRAVITY = -0.000005f;
 	float collisionRadius = 1;
 
 	// User input and entity swapping
