@@ -153,7 +153,7 @@ void Game::Init()
 	pLights.push_back(pLight1);
 
 
-	skyMesh = new Mesh(GetFullPathTo("../../Assets/OBJ Files/cube.obj").c_str(), device);
+	skyMesh = new Mesh(GetFullPathTo("../../Assets/Models/cube.obj").c_str(), device);
 
 	// Load the sky box texture
 	CreateDDSTextureFromFile(
@@ -261,6 +261,8 @@ void Game::CreateBasicGeometry()
 	// ********************************************************
 	// Entity initialization
 	// ********************************************************
+
+
 
 	// Terrain Creation
 	/*terrainMesh = new TerrainMesh(
