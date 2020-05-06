@@ -126,6 +126,11 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11RasterizerState> skyRasterState;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> skyDepthState;
 
+	// Texture related resources
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> diffuseTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> normalMap;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerOptions;
+
 	// Sprite batch resources
 	std::unique_ptr<DirectX::SpriteBatch> spriteBatch;
 	std::unique_ptr<DirectX::SpriteFont> spriteFont;

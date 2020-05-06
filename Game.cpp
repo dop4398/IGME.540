@@ -176,6 +176,32 @@ void Game::Init()
 	dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 	device->CreateDepthStencilState(&dsDesc, skyDepthState.GetAddressOf());
 
+	// Texture releated init
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),	// Passing in the context auto-generates mipmaps!!
+		GetFullPathTo_Wide(L"../../Assets/Textures/rock.png").c_str(),
+		nullptr,		// We don't need the texture ref ourselves
+		diffuseTexture.GetAddressOf()); // We do need an SRV
+
+	CreateWICTextureFromFile(
+		device.Get(),
+		context.Get(),	// Passing in the context auto-generates mipmaps!!
+		GetFullPathTo_Wide(L"../../Assets/Textures/rock_normals.png").c_str(),
+		nullptr,		// We don't need the texture ref ourselves
+		normalMap.GetAddressOf()); // We do need an SRV
+
+
+	// Describe the sampler state that I want
+	D3D11_SAMPLER_DESC sampDesc = {};
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+	sampDesc.MaxAnisotropy = 16;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	device->CreateSamplerState(&sampDesc, samplerOptions.GetAddressOf());
+
 	// Sprite batch setup (and sprite font loading)
 	spriteBatch = std::make_unique<SpriteBatch>(context.Get());
 	spriteFont = std::make_unique<SpriteFont>(device.Get(), GetFullPathTo_Wide(L"../../Assets/Fonts/Arial.spritefont").c_str());
@@ -583,6 +609,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		1.0f,
 		0);
 
+	// Set texture resources for the next draw
+	pixelShaderNormalMap->SetShaderResourceView("diffuseTexture", diffuseTexture.Get());
+	pixelShaderNormalMap->SetShaderResourceView("normalMap", normalMap.Get());
+	pixelShaderNormalMap->SetSamplerState("samplerOptions", samplerOptions.Get());
 
 	// Set the vertex and pixel shaders to use for the next Draw() command ** done below in the for loop
 	//  - These don't technically need to be set every frame
@@ -745,6 +775,8 @@ void Game::Draw(float deltaTime, float totalTime)
 	// SpriteFont: https://github.com/microsoft/DirectXTK/wiki/SpriteFont
 	{
 		// Make a rectangle for each of the output images
+		RECT imageRect = { 10, 10, 110, 110 };
+		RECT normalMapRect = { 120, 10, 220, 110 };
 		RECT fontSheetRect = { 230, 10, 320, 110 };
 
 		// Grab the SRV of the font from the SpriteFont
@@ -757,13 +789,15 @@ void Game::Draw(float deltaTime, float totalTime)
 		spriteBatch->Begin();
 
 		// Draw a few 2D textures around the screen
+		spriteBatch->Draw(diffuseTexture.Get(), imageRect);
+		spriteBatch->Draw(normalMap.Get(), normalMapRect);
 		spriteBatch->Draw(fontSheet, fontSheetRect);
 
 		// Draw some arbitrary text
 		spriteFont->DrawString(
 			spriteBatch.get(),
 			L"This is some cool text, yo",
-			XMFLOAT2(10, 10));
+			XMFLOAT2(10, 120));
 
 		// Draw the mouse position
 		POINT mousePos = {};
